@@ -29,20 +29,20 @@ class OrganizationalChartTest extends TestCase
         parent::setUp();
         
         // Create test company structure
-        $this->company = Company::create([
+        $this->company = Company::factory()->create([
             'name' => 'Test Corp',
             'code' => 'TC001',
             'is_active' => true,
         ]);
         
-        $this->office = Office::create([
+        $this->office = Office::factory()->create([
             'name' => 'Head Office',
             'code' => 'HO001',
             'company_id' => $this->company->id,
             'is_active' => true,
         ]);
         
-        $this->department = Department::create([
+        $this->department = Department::factory()->create([
             'name' => 'Engineering',
             'code' => 'ENG001',
             'company_id' => $this->company->id,
@@ -60,7 +60,7 @@ class OrganizationalChartTest extends TestCase
         // │   └── Junior Developer (reports to CTO)
         // └── CFO (reports to CEO)
         
-        $ceo = Staff::create([
+        $ceo = Staff::factory()->create([
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
@@ -72,7 +72,7 @@ class OrganizationalChartTest extends TestCase
             'hire_date' => now()->subYears(5),
         ]);
         
-        $cto = Staff::create([
+        $cto = Staff::factory()->create([
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
@@ -85,7 +85,7 @@ class OrganizationalChartTest extends TestCase
             'hire_date' => now()->subYears(3),
         ]);
         
-        $seniorDev = Staff::create([
+        $seniorDev = Staff::factory()->create([
             'employee_id' => 'EMP003',
             'first_name' => 'Bob',
             'last_name' => 'Johnson',
@@ -98,7 +98,7 @@ class OrganizationalChartTest extends TestCase
             'hire_date' => now()->subYears(2),
         ]);
         
-        $juniorDev = Staff::create([
+        $juniorDev = Staff::factory()->create([
             'employee_id' => 'EMP004',
             'first_name' => 'Alice',
             'last_name' => 'Brown',
@@ -111,7 +111,7 @@ class OrganizationalChartTest extends TestCase
             'hire_date' => now()->subYear(),
         ]);
         
-        $cfo = Staff::create([
+        $cfo = Staff::factory()->create([
             'employee_id' => 'EMP005',
             'first_name' => 'Charlie',
             'last_name' => 'Wilson',
@@ -155,7 +155,7 @@ class OrganizationalChartTest extends TestCase
     public function it_can_generate_flat_organizational_chart()
     {
         // Create simple structure
-        $ceo = Staff::create([
+        $ceo = Staff::factory()->create([
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
@@ -165,7 +165,7 @@ class OrganizationalChartTest extends TestCase
             'is_active' => true,
         ]);
         
-        $manager = Staff::create([
+        $manager = Staff::factory()->create([
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
@@ -205,7 +205,7 @@ class OrganizationalChartTest extends TestCase
     public function it_can_generate_reporting_paths()
     {
         // Create 3-level hierarchy
-        $ceo = Staff::create([
+        $ceo = Staff::factory()->create([
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
@@ -215,7 +215,7 @@ class OrganizationalChartTest extends TestCase
             'is_active' => true,
         ]);
         
-        $manager = Staff::create([
+        $manager = Staff::factory()->create([
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
@@ -226,7 +226,7 @@ class OrganizationalChartTest extends TestCase
             'is_active' => true,
         ]);
         
-        $employee = Staff::create([
+        $employee = Staff::factory()->create([
             'employee_id' => 'EMP003',
             'first_name' => 'Bob',
             'last_name' => 'Johnson',
@@ -259,7 +259,7 @@ class OrganizationalChartTest extends TestCase
     public function it_can_generate_organizational_statistics()
     {
         // Create structure for meaningful statistics
-        $ceo = Staff::create([
+        $ceo = Staff::factory()->create([
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
@@ -271,7 +271,7 @@ class OrganizationalChartTest extends TestCase
         
         // Create 3 managers under CEO
         for ($i = 2; $i <= 4; $i++) {
-            $manager = Staff::create([
+            $manager = Staff::factory()->create([
                 'employee_id' => sprintf('EMP%03d', $i),
                 'first_name' => "Manager{$i}",
                 'last_name' => 'Smith',
@@ -285,7 +285,7 @@ class OrganizationalChartTest extends TestCase
             // Create 2 employees under each manager
             for ($j = 1; $j <= 2; $j++) {
                 $empNum = ($i - 2) * 2 + $j + 4;
-                Staff::create([
+                Staff::factory()->create([
                     'employee_id' => sprintf('EMP%03d', $empNum),
                     'first_name' => "Employee{$empNum}",
                     'last_name' => 'Smith',
@@ -325,7 +325,7 @@ class OrganizationalChartTest extends TestCase
     public function it_can_export_to_csv_format()
     {
         // Create simple structure
-        $ceo = Staff::create([
+        $ceo = Staff::factory()->create([
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
@@ -336,7 +336,7 @@ class OrganizationalChartTest extends TestCase
             'is_active' => true,
         ]);
         
-        $manager = Staff::create([
+        $manager = Staff::factory()->create([
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
@@ -362,7 +362,7 @@ class OrganizationalChartTest extends TestCase
     public function it_can_export_to_dot_format()
     {
         // Create simple structure
-        $ceo = Staff::create([
+        $ceo = Staff::factory()->create([
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
@@ -372,7 +372,7 @@ class OrganizationalChartTest extends TestCase
             'is_active' => true,
         ]);
         
-        $manager = Staff::create([
+        $manager = Staff::factory()->create([
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
@@ -396,7 +396,7 @@ class OrganizationalChartTest extends TestCase
     public function it_can_generate_chart_from_specific_staff()
     {
         // Create hierarchy
-        $ceo = Staff::create([
+        $ceo = Staff::factory()->create([
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
@@ -406,7 +406,7 @@ class OrganizationalChartTest extends TestCase
             'is_active' => true,
         ]);
         
-        $manager = Staff::create([
+        $manager = Staff::factory()->create([
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
@@ -417,7 +417,7 @@ class OrganizationalChartTest extends TestCase
             'is_active' => true,
         ]);
         
-        $employee = Staff::create([
+        $employee = Staff::factory()->create([
             'employee_id' => 'EMP003',
             'first_name' => 'Bob',
             'last_name' => 'Johnson',
@@ -455,7 +455,7 @@ class OrganizationalChartTest extends TestCase
     public function it_provides_reorganization_suggestions()
     {
         // Create a structure that should trigger suggestions
-        $ceo = Staff::create([
+        $ceo = Staff::factory()->create([
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
@@ -466,7 +466,7 @@ class OrganizationalChartTest extends TestCase
         ]);
         
         // Create manager with too many direct reports (>10)
-        $manager = Staff::create([
+        $manager = Staff::factory()->create([
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
@@ -479,7 +479,7 @@ class OrganizationalChartTest extends TestCase
         
         // Create 12 employees under manager (exceeds recommended span of 10)
         for ($i = 3; $i <= 14; $i++) {
-            Staff::create([
+            Staff::factory()->create([
                 'employee_id' => sprintf('EMP%03d', $i),
                 'first_name' => "Employee{$i}",
                 'last_name' => 'Smith',

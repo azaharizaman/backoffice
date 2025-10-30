@@ -15,20 +15,20 @@ class OfficeTest extends TestCase
     /** @test */
     public function it_can_create_an_office()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Headquarters',
             'code' => 'HQ',
             'description' => 'Main office',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Main Office',
             'code' => 'MAIN',
             'description' => 'Main office location',
@@ -53,19 +53,19 @@ class OfficeTest extends TestCase
     /** @test */
     public function it_belongs_to_company()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
@@ -79,19 +79,19 @@ class OfficeTest extends TestCase
     /** @test */
     public function it_belongs_to_office_type()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Regional Office',
             'code' => 'REGIONAL',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
@@ -105,19 +105,19 @@ class OfficeTest extends TestCase
     /** @test */
     public function it_can_create_office_hierarchy()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $parentOffice = Office::create([
+        $parentOffice = Office::factory()->create([
             'name' => 'Parent Office',
             'code' => 'PARENT',
             'company_id' => $company->id,
@@ -125,7 +125,7 @@ class OfficeTest extends TestCase
             'is_active' => true,
         ]);
 
-        $childOffice = Office::create([
+        $childOffice = Office::factory()->create([
             'name' => 'Child Office',
             'code' => 'CHILD',
             'company_id' => $company->id,
@@ -142,19 +142,19 @@ class OfficeTest extends TestCase
     /** @test */
     public function it_can_get_root_office()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $rootOffice = Office::create([
+        $rootOffice = Office::factory()->create([
             'name' => 'Root Office',
             'code' => 'ROOT',
             'company_id' => $company->id,
@@ -162,7 +162,7 @@ class OfficeTest extends TestCase
             'is_active' => true,
         ]);
 
-        $level1Office = Office::create([
+        $level1Office = Office::factory()->create([
             'name' => 'Level 1 Office',
             'code' => 'L1',
             'company_id' => $company->id,
@@ -171,7 +171,7 @@ class OfficeTest extends TestCase
             'is_active' => true,
         ]);
 
-        $level2Office = Office::create([
+        $level2Office = Office::factory()->create([
             'name' => 'Level 2 Office',
             'code' => 'L2',
             'company_id' => $company->id,
@@ -188,19 +188,19 @@ class OfficeTest extends TestCase
     /** @test */
     public function it_can_scope_active_offices()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $activeOffice = Office::create([
+        $activeOffice = Office::factory()->create([
             'name' => 'Active Office',
             'code' => 'ACTIVE',
             'company_id' => $company->id,
@@ -208,7 +208,7 @@ class OfficeTest extends TestCase
             'is_active' => true,
         ]);
 
-        $inactiveOffice = Office::create([
+        $inactiveOffice = Office::factory()->create([
             'name' => 'Inactive Office',
             'code' => 'INACTIVE',
             'company_id' => $company->id,
@@ -226,32 +226,32 @@ class OfficeTest extends TestCase
     /** @test */
     public function it_can_scope_by_company()
     {
-        $company1 = Company::create([
+        $company1 = Company::factory()->create([
             'name' => 'Company 1',
             'code' => 'COMP1',
             'is_active' => true,
         ]);
 
-        $company2 = Company::create([
+        $company2 = Company::factory()->create([
             'name' => 'Company 2',
             'code' => 'COMP2',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $office1 = Office::create([
+        $office1 = Office::factory()->create([
             'name' => 'Office 1',
             'company_id' => $company1->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $office2 = Office::create([
+        $office2 = Office::factory()->create([
             'name' => 'Office 2',
             'company_id' => $company2->id,
             'office_type_id' => $officeType->id,
@@ -268,32 +268,32 @@ class OfficeTest extends TestCase
     /** @test */
     public function it_can_scope_by_office_type()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'is_active' => true,
         ]);
 
-        $branchType = OfficeType::create([
+        $branchType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $hqType = OfficeType::create([
+        $hqType = OfficeType::factory()->create([
             'name' => 'Headquarters',
             'code' => 'HQ',
             'is_active' => true,
         ]);
 
-        $branchOffice = Office::create([
+        $branchOffice = Office::factory()->create([
             'name' => 'Branch Office',
             'company_id' => $company->id,
             'office_type_id' => $branchType->id,
             'is_active' => true,
         ]);
 
-        $hqOffice = Office::create([
+        $hqOffice = Office::factory()->create([
             'name' => 'HQ Office',
             'company_id' => $company->id,
             'office_type_id' => $hqType->id,
@@ -312,7 +312,7 @@ class OfficeTest extends TestCase
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
         
-        Office::create([
+        Office::factory()->create([
             'code' => 'TEST',
             'is_active' => true,
         ]);
@@ -321,19 +321,19 @@ class OfficeTest extends TestCase
     /** @test */
     public function it_can_have_nullable_code()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
@@ -346,19 +346,19 @@ class OfficeTest extends TestCase
     /** @test */
     public function it_defaults_to_active()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,

@@ -34,41 +34,41 @@ class StaffTransferFeatureTest extends TestCase
     {
         parent::setUp();
 
-        $this->company = Company::create([
+        $this->company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'is_active' => true,
         ]);
 
-        $this->sourceOffice = Office::create([
+        $this->sourceOffice = Office::factory()->create([
             'name' => 'Source Office',
             'code' => 'SRC',
             'company_id' => $this->company->id,
             'is_active' => true,
         ]);
 
-        $this->targetOffice = Office::create([
+        $this->targetOffice = Office::factory()->create([
             'name' => 'Target Office',
             'code' => 'TGT',
             'company_id' => $this->company->id,
             'is_active' => true,
         ]);
 
-        $this->sourceDepartment = Department::create([
+        $this->sourceDepartment = Department::factory()->create([
             'name' => 'Source Department',
             'code' => 'SRC_DEPT',
             'company_id' => $this->company->id,
             'is_active' => true,
         ]);
 
-        $this->targetDepartment = Department::create([
+        $this->targetDepartment = Department::factory()->create([
             'name' => 'Target Department',
             'code' => 'TGT_DEPT',
             'company_id' => $this->company->id,
             'is_active' => true,
         ]);
 
-        $this->supervisor = Staff::create([
+        $this->supervisor = Staff::factory()->create([
             'employee_id' => 'SUP001',
             'first_name' => 'Current',
             'last_name' => 'Supervisor',
@@ -79,7 +79,7 @@ class StaffTransferFeatureTest extends TestCase
             'status' => StaffStatus::ACTIVE,
         ]);
 
-        $this->newSupervisor = Staff::create([
+        $this->newSupervisor = Staff::factory()->create([
             'employee_id' => 'SUP002',
             'first_name' => 'New',
             'last_name' => 'Supervisor',
@@ -90,7 +90,7 @@ class StaffTransferFeatureTest extends TestCase
             'status' => StaffStatus::ACTIVE,
         ]);
 
-        $this->staff = Staff::create([
+        $this->staff = Staff::factory()->create([
             'employee_id' => 'EMP001',
             'first_name' => 'Test',
             'last_name' => 'Employee',
@@ -103,7 +103,7 @@ class StaffTransferFeatureTest extends TestCase
             'status' => StaffStatus::ACTIVE,
         ]);
 
-        $this->hrStaff = Staff::create([
+        $this->hrStaff = Staff::factory()->create([
             'employee_id' => 'HR001',
             'first_name' => 'HR',
             'last_name' => 'Manager',

@@ -16,25 +16,25 @@ class DepartmentTest extends TestCase
     /** @test */
     public function it_can_create_a_department()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Headquarters',
             'code' => 'HQ',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $department = Department::create([
+        $department = Department::factory()->create([
             'name' => 'IT Department',
             'code' => 'IT',
             'description' => 'Information Technology Department',
@@ -56,25 +56,25 @@ class DepartmentTest extends TestCase
     /** @test */
     public function it_belongs_to_office()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $department = Department::create([
+        $department = Department::factory()->create([
             'name' => 'HR Department',
             'office_id' => $office->id,
             'is_active' => true,
@@ -87,32 +87,32 @@ class DepartmentTest extends TestCase
     /** @test */
     public function it_can_create_department_hierarchy()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Headquarters',
             'code' => 'HQ',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $parentDepartment = Department::create([
+        $parentDepartment = Department::factory()->create([
             'name' => 'Technology',
             'code' => 'TECH',
             'office_id' => $office->id,
             'is_active' => true,
         ]);
 
-        $childDepartment = Department::create([
+        $childDepartment = Department::factory()->create([
             'name' => 'Software Development',
             'code' => 'SOFTDEV',
             'office_id' => $office->id,
@@ -128,45 +128,45 @@ class DepartmentTest extends TestCase
     /** @test */
     public function it_can_get_all_departments_in_hierarchy()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Headquarters',
             'code' => 'HQ',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $rootDepartment = Department::create([
+        $rootDepartment = Department::factory()->create([
             'name' => 'Technology',
             'office_id' => $office->id,
             'is_active' => true,
         ]);
 
-        $child1 = Department::create([
+        $child1 = Department::factory()->create([
             'name' => 'Software Development',
             'office_id' => $office->id,
             'parent_department_id' => $rootDepartment->id,
             'is_active' => true,
         ]);
 
-        $child2 = Department::create([
+        $child2 = Department::factory()->create([
             'name' => 'Quality Assurance',
             'office_id' => $office->id,
             'parent_department_id' => $rootDepartment->id,
             'is_active' => true,
         ]);
 
-        $grandchild = Department::create([
+        $grandchild = Department::factory()->create([
             'name' => 'Frontend Development',
             'office_id' => $office->id,
             'parent_department_id' => $child1->id,
@@ -184,38 +184,38 @@ class DepartmentTest extends TestCase
     /** @test */
     public function it_can_scope_by_office()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $office1 = Office::create([
+        $office1 = Office::factory()->create([
             'name' => 'Office 1',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $office2 = Office::create([
+        $office2 = Office::factory()->create([
             'name' => 'Office 2',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $dept1 = Department::create([
+        $dept1 = Department::factory()->create([
             'name' => 'IT Department',
             'office_id' => $office1->id,
             'is_active' => true,
         ]);
 
-        $dept2 = Department::create([
+        $dept2 = Department::factory()->create([
             'name' => 'HR Department',
             'office_id' => $office2->id,
             'is_active' => true,
@@ -231,31 +231,31 @@ class DepartmentTest extends TestCase
     /** @test */
     public function it_can_scope_active_departments()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $activeDepartment = Department::create([
+        $activeDepartment = Department::factory()->create([
             'name' => 'Active Department',
             'office_id' => $office->id,
             'is_active' => true,
         ]);
 
-        $inactiveDepartment = Department::create([
+        $inactiveDepartment = Department::factory()->create([
             'name' => 'Inactive Department',
             'office_id' => $office->id,
             'is_active' => false,
@@ -273,7 +273,7 @@ class DepartmentTest extends TestCase
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
         
-        Department::create([
+        Department::factory()->create([
             'code' => 'TEST',
             'is_active' => true,
         ]);
@@ -282,25 +282,25 @@ class DepartmentTest extends TestCase
     /** @test */
     public function it_defaults_to_active()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Branch',
             'code' => 'BRANCH',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $department = Department::create([
+        $department = Department::factory()->create([
             'name' => 'Test Department',
             'office_id' => $office->id,
         ]);
