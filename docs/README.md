@@ -9,6 +9,7 @@ Welcome to the comprehensive documentation for the BackOffice Laravel package. T
 - [Models & Relationships](models.md)
 - [Organizational Chart & Reporting Lines](organizational-chart.md)
 - [Staff Resignation Management](resignation.md)
+- [Staff Transfer System](staff-transfers.md)
 - [Traits & Behaviors](traits.md)
 - [Policies & Authorization](policies.md)
 - [Console Commands](commands.md)
@@ -42,6 +43,12 @@ The BackOffice package is designed to handle complex organizational structures w
   - Automatic resignation processing
   - Resignation reason tracking
   - Resignation cancellation support
+- **Staff Transfer System**:
+  - Transfer staff between offices and departments
+  - Approval workflow with status tracking
+  - Scheduled transfers with effective dates
+  - Complete audit trail and history
+  - Transfer validation and business rules
 
 ### Flexible Architecture
 - Model traits for reusable functionality

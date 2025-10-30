@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Carbon\Carbon;
 
 /**
  * Staff Model
@@ -598,5 +599,153 @@ class Staff extends Model
     public function scopeReportsTo($query, Staff $supervisor)
     {
         return $query->where('supervisor_id', $supervisor->id);
+    }
+    
+    // ===== TRANSFER METHODS =====
+    
+    /**
+     * Get the transfers for this staff member.
+     */
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(StaffTransfer::class);
+    }
+    
+    /**
+     * Get the active (pending or approved) transfer for this staff.
+     */
+    public function activeTransfer(): HasMany
+    {
+        return $this->transfers()
+            ->whereIn('status', ['pending', 'approved']);
+    }
+    
+    /**
+     * Get the transfer history for this staff.
+     */
+    public function transferHistory(): HasMany
+    {
+        return $this->transfers()
+            ->whereIn('status', ['completed', 'rejected', 'cancelled'])
+            ->orderBy('created_at', 'desc');
+    }
+    
+    /**
+     * Check if staff has an active transfer.
+     */
+    public function hasActiveTransfer(): bool
+    {
+        return $this->activeTransfer()->exists();
+    }
+    
+    /**
+     * Check if staff can be transferred.
+     */
+    public function canBeTransferred(): bool
+    {
+        return $this->is_active && 
+               $this->status === StaffStatus::ACTIVE && 
+               !$this->hasActiveTransfer();
+    }
+    
+    /**
+     * Request a transfer for this staff member.
+     */
+    public function requestTransfer(
+        Office $toOffice,
+        Staff $requestedBy,
+        ?Carbon $effectiveDate = null,
+        ?Department $toDepartment = null,
+        ?Staff $toSupervisor = null,
+        ?string $toPosition = null,
+        ?string $reason = null,
+        bool $isImmediate = false
+    ): StaffTransfer {
+        // Load current relationships to capture current state
+        $this->load(['office', 'department', 'supervisor']);
+        
+        $transferData = [
+            'staff_id' => $this->id,
+            'from_office_id' => $this->office_id,
+            'to_office_id' => $toOffice->id,
+            'from_department_id' => $this->department_id,
+            'to_department_id' => $toDepartment?->id,
+            'from_supervisor_id' => $this->supervisor_id,
+            'to_supervisor_id' => $toSupervisor?->id,
+            'from_position' => $this->position,
+            'to_position' => $toPosition,
+            'effective_date' => $effectiveDate ?? ($isImmediate ? now() : now()->addDays(30)),
+            'requested_by_id' => $requestedBy->id,
+            'reason' => $reason,
+            'is_immediate' => $isImmediate,
+            'requested_at' => now(),
+        ];
+        
+        return StaffTransfer::create($transferData);
+    }
+    
+    /**
+     * Request an immediate transfer for this staff member.
+     */
+    public function requestImmediateTransfer(
+        Office $toOffice,
+        Staff $requestedBy,
+        ?Department $toDepartment = null,
+        ?Staff $toSupervisor = null,
+        ?string $toPosition = null,
+        ?string $reason = null
+    ): StaffTransfer {
+        return $this->requestTransfer(
+            toOffice: $toOffice,
+            requestedBy: $requestedBy,
+            effectiveDate: now(),
+            toDepartment: $toDepartment,
+            toSupervisor: $toSupervisor,
+            toPosition: $toPosition,
+            reason: $reason,
+            isImmediate: true
+        );
+    }
+    
+    /**
+     * Get the latest transfer for this staff.
+     */
+    public function latestTransfer(): ?StaffTransfer
+    {
+        return $this->transfers()
+            ->latest('created_at')
+            ->first();
+    }
+    
+    /**
+     * Get completed transfers count.
+     */
+    public function getCompletedTransfersCount(): int
+    {
+        return $this->transfers()
+            ->where('status', 'completed')
+            ->count();
+    }
+    
+    /**
+     * Get the last completed transfer.
+     */
+    public function lastCompletedTransfer(): ?StaffTransfer
+    {
+        return $this->transfers()
+            ->where('status', 'completed')
+            ->latest('completed_at')
+            ->first();
+    }
+    
+    /**
+     * Check if staff has been transferred within a given period.
+     */
+    public function hasRecentTransfer(int $days = 90): bool
+    {
+        return $this->transfers()
+            ->where('status', 'completed')
+            ->where('completed_at', '>=', now()->subDays($days))
+            ->exists();
     }
 }

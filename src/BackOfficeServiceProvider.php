@@ -10,6 +10,7 @@ use AzahariZaman\BackOffice\Models\Company;
 use AzahariZaman\BackOffice\Models\Office;
 use AzahariZaman\BackOffice\Models\Department;
 use AzahariZaman\BackOffice\Models\Staff;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
 use AzahariZaman\BackOffice\Models\Unit;
 use AzahariZaman\BackOffice\Models\UnitGroup;
 use AzahariZaman\BackOffice\Models\OfficeType;
@@ -17,13 +18,16 @@ use AzahariZaman\BackOffice\Observers\CompanyObserver;
 use AzahariZaman\BackOffice\Observers\OfficeObserver;
 use AzahariZaman\BackOffice\Observers\DepartmentObserver;
 use AzahariZaman\BackOffice\Observers\StaffObserver;
+use AzahariZaman\BackOffice\Observers\StaffTransferObserver;
 use AzahariZaman\BackOffice\Policies\CompanyPolicy;
 use AzahariZaman\BackOffice\Policies\OfficePolicy;
 use AzahariZaman\BackOffice\Policies\DepartmentPolicy;
 use AzahariZaman\BackOffice\Policies\StaffPolicy;
+use AzahariZaman\BackOffice\Policies\StaffTransferPolicy;
 use AzahariZaman\BackOffice\Commands\InstallBackOfficeCommand;
 use AzahariZaman\BackOffice\Commands\CreateOfficeTypesCommand;
 use AzahariZaman\BackOffice\Commands\ProcessResignationsCommand;
+use AzahariZaman\BackOffice\Commands\ProcessStaffTransfersCommand;
 
 /**
  * BackOffice Service Provider
@@ -118,6 +122,7 @@ class BackOfficeServiceProvider extends ServiceProvider
                 InstallBackOfficeCommand::class,
                 CreateOfficeTypesCommand::class,
                 ProcessResignationsCommand::class,
+                ProcessStaffTransfersCommand::class,
             ]);
         }
     }
@@ -131,6 +136,7 @@ class BackOfficeServiceProvider extends ServiceProvider
         Office::observe(OfficeObserver::class);
         Department::observe(DepartmentObserver::class);
         Staff::observe(StaffObserver::class);
+        StaffTransfer::observe(StaffTransferObserver::class);
     }
 
     /**
@@ -142,6 +148,7 @@ class BackOfficeServiceProvider extends ServiceProvider
         Gate::policy(Office::class, OfficePolicy::class);
         Gate::policy(Department::class, DepartmentPolicy::class);
         Gate::policy(Staff::class, StaffPolicy::class);
+        Gate::policy(StaffTransfer::class, StaffTransferPolicy::class);
     }
 
     /**
