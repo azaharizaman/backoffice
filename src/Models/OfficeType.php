@@ -83,4 +83,12 @@ class OfficeType extends Model
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \AzahariZaman\BackOffice\Database\Factories\OfficeTypeFactory
+    {
+        return \AzahariZaman\BackOffice\Database\Factories\OfficeTypeFactory::new();
+    }
 }

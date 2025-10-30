@@ -555,4 +555,12 @@ class StaffTransfer extends Model
         
         return $changes;
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \AzahariZaman\BackOffice\Database\Factories\StaffTransferFactory
+    {
+        return \AzahariZaman\BackOffice\Database\Factories\StaffTransferFactory::new();
+    }
 }
