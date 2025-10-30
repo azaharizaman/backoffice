@@ -2,13 +2,13 @@
 
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
-use AzahariZaman\BackOffice\Tests\TestCase;
-use AzahariZaman\BackOffice\Models\Company;
-use AzahariZaman\BackOffice\Models\Office;
-use AzahariZaman\BackOffice\Models\Department;
 use AzahariZaman\BackOffice\Models\Staff;
-use AzahariZaman\BackOffice\Models\OfficeType;
+use AzahariZaman\BackOffice\Models\Office;
+use AzahariZaman\BackOffice\Models\Company;
+use AzahariZaman\BackOffice\Tests\TestCase;
 use AzahariZaman\BackOffice\Enums\StaffStatus;
+use AzahariZaman\BackOffice\Models\Department;
+use AzahariZaman\BackOffice\Models\OfficeType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class StaffTest extends TestCase
@@ -96,6 +96,27 @@ class StaffTest extends TestCase
 
         $this->assertEquals($structure['department']->id, $staff->department->id);
         $this->assertEquals('IT Department', $staff->department->name);
+    }
+
+    /** @test */
+    public function it_belongs_to_office()
+    {
+        $structure = $this->createTestStructure();
+
+        $staff = Staff::factory()->create([
+            'first_name' => 'Alice', 'last_name' => 'Johnson',
+            'email' => 'alice@example.com',
+            'employee_id' => 'EMP003',
+            'position' => 'HR Specialist',
+            'office_id' => $structure['office']->id,
+            'department_id' => $structure['department']->id,
+            'status' => StaffStatus::ACTIVE,
+            'is_active' => true,
+        ]);
+
+        $this->assertEquals($structure['office']->id, $staff->office->id);
+        $this->assertEquals('Main Office', $staff->office->name);
+        $this->assertEquals('Headquarters', $staff->office->officeTypes->first()->name);
     }
 
     /** @test */
