@@ -22,6 +22,11 @@ return new class extends Migration
             $table->unsignedBigInteger('department_id')->nullable();
             $table->string('position')->nullable();
             $table->date('hire_date')->nullable();
+            $table->date('resignation_date')->nullable();
+            $table->text('resignation_reason')->nullable();
+            $table->timestamp('resigned_at')->nullable();
+            $table->string('status')->default('active');
+            $table->unsignedBigInteger('supervisor_id')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
@@ -35,9 +40,17 @@ return new class extends Migration
                   ->references('id')
                   ->on('backoffice_departments')
                   ->onDelete('set null');
+                  
+            $table->foreign('supervisor_id')
+                  ->references('id')
+                  ->on('backoffice_staff')
+                  ->onDelete('set null');
             
             $table->index(['office_id']);
             $table->index(['department_id']);
+            $table->index(['supervisor_id']);
+            $table->index(['status']);
+            $table->index(['resignation_date']);
             $table->index(['is_active']);
             $table->index(['hire_date']);
             $table->index(['created_at']);

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace AzahariZaman\BackOffice\Observers;
 
 use AzahariZaman\BackOffice\Models\Staff;
+use AzahariZaman\BackOffice\Enums\StaffStatus;
+use AzahariZaman\BackOffice\Exceptions\InvalidResignationException;
 
 /**
  * Staff Observer
@@ -22,6 +24,8 @@ class StaffObserver
         if (!$staff->office_id && !$staff->department_id) {
             throw new \InvalidArgumentException('Staff must belong to at least one office or department.');
         }
+
+        $this->validateResignationData($staff);
     }
 
     /**
@@ -41,6 +45,9 @@ class StaffObserver
         if (!$staff->office_id && !$staff->department_id) {
             throw new \InvalidArgumentException('Staff must belong to at least one office or department.');
         }
+
+        $this->validateResignationData($staff);
+        $this->handleResignationStatusChanges($staff);
     }
 
     /**
@@ -48,7 +55,10 @@ class StaffObserver
      */
     public function updated(Staff $staff): void
     {
-        // Handle post-update logic
+        // Log resignation status changes if needed
+        if ($staff->wasChanged('status') && $staff->status === StaffStatus::RESIGNED) {
+            // You could add logging here if needed
+        }
     }
 
     /**
@@ -66,5 +76,60 @@ class StaffObserver
     public function restored(Staff $staff): void
     {
         // Handle restoration logic
+    }
+
+    /**
+     * Validate resignation data consistency.
+     */
+    private function validateResignationData(Staff $staff): void
+    {
+        // If resignation date is set, ensure it's not in the past for new entries
+        if ($staff->resignation_date && !$staff->exists) {
+            if ($staff->resignation_date < now()->toDateString()) {
+                throw new InvalidResignationException(
+                    'Resignation date cannot be in the past for new staff entries.'
+                );
+            }
+        }
+
+        // If status is RESIGNED, ensure resigned_at is set
+        if ($staff->status === StaffStatus::RESIGNED && !$staff->resigned_at) {
+            $staff->resigned_at = now();
+        }
+
+        // If status is RESIGNED, ensure is_active is false
+        if ($staff->status === StaffStatus::RESIGNED) {
+            $staff->is_active = false;
+        }
+
+        // If resignation is cancelled, clean up related fields
+        if ($staff->isDirty('resignation_date') && !$staff->resignation_date) {
+            $staff->resignation_reason = null;
+        }
+    }
+
+    /**
+     * Handle resignation status changes.
+     */
+    private function handleResignationStatusChanges(Staff $staff): void
+    {
+        // If changing TO resigned status
+        if ($staff->isDirty('status') && $staff->status === StaffStatus::RESIGNED) {
+            if (!$staff->resigned_at) {
+                $staff->resigned_at = now();
+            }
+            $staff->is_active = false;
+        }
+
+        // If changing FROM resigned status to active status
+        if ($staff->isDirty('status') && 
+            $staff->getOriginal('status') === StaffStatus::RESIGNED->value && 
+            $staff->status === StaffStatus::ACTIVE) {
+            // Clear resignation data when reactivating
+            $staff->resignation_date = null;
+            $staff->resignation_reason = null;
+            $staff->resigned_at = null;
+            $staff->is_active = true;
+        }
     }
 }

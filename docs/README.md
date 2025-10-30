@@ -7,6 +7,7 @@ Welcome to the comprehensive documentation for the BackOffice Laravel package. T
 - [Installation Guide](installation.md)
 - [Configuration](configuration.md)
 - [Models & Relationships](models.md)
+- [Staff Resignation Management](resignation.md)
 - [Traits & Behaviors](traits.md)
 - [Policies & Authorization](policies.md)
 - [Console Commands](commands.md)
@@ -29,6 +30,11 @@ The BackOffice package is designed to handle complex organizational structures w
 - Staff can belong to offices and/or departments
 - Multiple unit assignments per staff member
 - Comprehensive staff information tracking
+- **Staff Resignation Management**:
+  - Schedule resignations with future dates
+  - Automatic resignation processing
+  - Resignation reason tracking
+  - Resignation cancellation support
 
 ### Flexible Architecture
 - Model traits for reusable functionality
@@ -51,7 +57,7 @@ php artisan backoffice:install
 
 3. **Create your first company**:
 ```php
-use AzahariZaman\BackOffice\Models\Company;
+use Carbon\Carbon;
 
 $company = Company::create([
     'name' => 'My Company',
@@ -90,8 +96,23 @@ $staff = Staff::create([
     'department_id' => $department->id,
     'position' => 'HR Manager',
     'hire_date' => now(),
+    'status' => StaffStatus::ACTIVE,
     'is_active' => true,
 ]);
+```
+
+6. **Manage staff resignations**:
+```php
+use AzahariZaman\BackOffice\Models\Company;
+
+// Schedule resignation 30 days from now
+$staff->scheduleResignation(
+    Carbon::now()->addDays(30),
+    'Found better opportunity'
+);
+
+// Process resignations automatically
+php artisan backoffice:process-resignations --force
 ```
 
 ## Key Concepts

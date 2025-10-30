@@ -23,6 +23,7 @@ use AzahariZaman\BackOffice\Policies\DepartmentPolicy;
 use AzahariZaman\BackOffice\Policies\StaffPolicy;
 use AzahariZaman\BackOffice\Commands\InstallBackOfficeCommand;
 use AzahariZaman\BackOffice\Commands\CreateOfficeTypesCommand;
+use AzahariZaman\BackOffice\Commands\ProcessResignationsCommand;
 
 /**
  * BackOffice Service Provider
@@ -116,6 +117,7 @@ class BackOfficeServiceProvider extends ServiceProvider
             $this->commands([
                 InstallBackOfficeCommand::class,
                 CreateOfficeTypesCommand::class,
+                ProcessResignationsCommand::class,
             ]);
         }
     }

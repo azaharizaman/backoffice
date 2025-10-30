@@ -15,6 +15,7 @@ enum StaffStatus: string
     case INACTIVE = 'inactive';
     case ON_LEAVE = 'on_leave';
     case TERMINATED = 'terminated';
+    case RESIGNED = 'resigned';
     case RETIRED = 'retired';
 
     /**
@@ -35,6 +36,7 @@ enum StaffStatus: string
             self::INACTIVE => 'Inactive',
             self::ON_LEAVE => 'On Leave',
             self::TERMINATED => 'Terminated',
+            self::RESIGNED => 'Resigned',
             self::RETIRED => 'Retired',
         };
     }
@@ -56,6 +58,22 @@ enum StaffStatus: string
     }
 
     /**
+     * Check if the status is considered terminated.
+     */
+    public function isTerminated(): bool
+    {
+        return in_array($this, [self::TERMINATED, self::RESIGNED, self::RETIRED]);
+    }
+
+    /**
+     * Check if the staff has resigned.
+     */
+    public function isResigned(): bool
+    {
+        return $this === self::RESIGNED;
+    }
+
+    /**
      * Get CSS class for the status.
      */
     public function cssClass(): string
@@ -65,6 +83,7 @@ enum StaffStatus: string
             self::INACTIVE => 'text-gray-600 bg-gray-100',
             self::ON_LEAVE => 'text-yellow-600 bg-yellow-100',
             self::TERMINATED => 'text-red-600 bg-red-100',
+            self::RESIGNED => 'text-orange-600 bg-orange-100',
             self::RETIRED => 'text-purple-600 bg-purple-100',
         };
     }

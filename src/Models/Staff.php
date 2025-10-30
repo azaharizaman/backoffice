@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Models;
 
+use AzahariZaman\BackOffice\Enums\StaffStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -56,8 +58,13 @@ class Staff extends Model
         'phone',
         'office_id',
         'department_id',
+        'supervisor_id',
         'position',
         'hire_date',
+        'resignation_date',
+        'resignation_reason',
+        'resigned_at',
+        'status',
         'is_active',
     ];
 
@@ -66,6 +73,9 @@ class Staff extends Model
      */
     protected $casts = [
         'hire_date' => 'date',
+        'resignation_date' => 'date',
+        'resigned_at' => 'datetime',
+        'status' => StaffStatus::class,
         'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -104,6 +114,22 @@ class Staff extends Model
             'staff_id',
             'unit_id'
         );
+    }
+
+    /**
+     * Get the supervisor of this staff.
+     */
+    public function supervisor(): BelongsTo
+    {
+        return $this->belongsTo(Staff::class, 'supervisor_id');
+    }
+
+    /**
+     * Get the subordinates of this staff.
+     */
+    public function subordinates(): HasMany
+    {
+        return $this->hasMany(Staff::class, 'supervisor_id');
     }
 
     /**
@@ -198,5 +224,111 @@ class Staff extends Model
               ->orWhere('last_name', 'like', "%{$search}%")
               ->orWhereRaw("CONCAT(first_name, ' ', last_name) like ?", ["%{$search}%"]);
         });
+    }
+
+    /**
+     * Scope to filter by status.
+     */
+    public function scopeByStatus($query, StaffStatus $status)
+    {
+        return $query->where('status', $status->value);
+    }
+
+    /**
+     * Scope to get staff with pending resignations.
+     */
+    public function scopePendingResignation($query)
+    {
+        return $query->whereNotNull('resignation_date')
+                    ->whereNull('resigned_at')
+                    ->where('status', '!=', StaffStatus::RESIGNED->value);
+    }
+
+    /**
+     * Scope to get resigned staff.
+     */
+    public function scopeResigned($query)
+    {
+        return $query->where('status', StaffStatus::RESIGNED->value)
+                    ->whereNotNull('resigned_at');
+    }
+
+    /**
+     * Schedule staff resignation.
+     */
+    public function scheduleResignation(\DateTime $resignationDate, ?string $reason = null): self
+    {
+        $this->update([
+            'resignation_date' => $resignationDate,
+            'resignation_reason' => $reason,
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * Process resignation (mark as resigned).
+     */
+    public function processResignation(): self
+    {
+        $this->update([
+            'status' => StaffStatus::RESIGNED,
+            'resigned_at' => now(),
+            'is_active' => false,
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * Cancel scheduled resignation.
+     */
+    public function cancelResignation(): self
+    {
+        $this->update([
+            'resignation_date' => null,
+            'resignation_reason' => null,
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * Check if staff has pending resignation.
+     */
+    public function hasPendingResignation(): bool
+    {
+        return !is_null($this->resignation_date) && 
+               is_null($this->resigned_at) && 
+               !$this->status->isResigned();
+    }
+
+    /**
+     * Check if resignation is due (date has passed).
+     */
+    public function isResignationDue(): bool
+    {
+        return $this->hasPendingResignation() && 
+               $this->resignation_date <= now()->toDateString();
+    }
+
+    /**
+     * Check if staff is resigned.
+     */
+    public function isResigned(): bool
+    {
+        return $this->status->isResigned();
+    }
+
+    /**
+     * Get days until resignation.
+     */
+    public function getDaysUntilResignation(): ?int
+    {
+        if (!$this->hasPendingResignation()) {
+            return null;
+        }
+
+        return now()->diffInDays($this->resignation_date, false);
     }
 }
