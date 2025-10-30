@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Database\Factories;
 
+use AzahariZaman\BackOffice\Models\Staff;
+use AzahariZaman\BackOffice\Models\Office;
 use AzahariZaman\BackOffice\Enums\StaffStatus;
 use AzahariZaman\BackOffice\Models\Department;
-use AzahariZaman\BackOffice\Models\Office;
-use AzahariZaman\BackOffice\Models\Staff;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
