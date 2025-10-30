@@ -41,7 +41,7 @@ class ProcessResignationsCommand extends Command
 
         if ($dueResignations->isEmpty()) {
             $this->info('No resignations to process.');
-            return self::SUCCESS;
+            return Command::SUCCESS;
         }
 
         $this->info("Found {$dueResignations->count()} resignation(s) to process:");
@@ -63,14 +63,14 @@ class ProcessResignationsCommand extends Command
         // Check for dry run
         if ($this->option('dry-run')) {
             $this->warn('Dry run mode - no changes will be made.');
-            return self::SUCCESS;
+            return Command::SUCCESS;
         }
 
         // Confirm processing unless forced
         if (!$this->option('force')) {
             if (!$this->confirm('Do you want to process these resignations?')) {
                 $this->info('Processing cancelled.');
-                return self::SUCCESS;
+                return Command::SUCCESS;
             }
         }
 
@@ -96,7 +96,7 @@ class ProcessResignationsCommand extends Command
             $this->warn("- Errors: {$errors}");
         }
 
-        return $errors > 0 ? self::FAILURE : self::SUCCESS;
+        return $errors > 0 ? Command::FAILURE : Command::SUCCESS;
     }
 
     /**

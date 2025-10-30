@@ -20,6 +20,8 @@ A comprehensive Laravel package for managing hierarchical company structures, of
 - **Multi-Hierarchy Support**: Both physical (offices) and logical (departments) hierarchies
 - **Flexible Staff Assignment**: Staff can belong to offices, departments, or both
 - **Unit Organization**: Staff can belong to multiple units within unit groups
+- **Organizational Charts**: Comprehensive reporting line management with chart generation
+- **Export Capabilities**: JSON, CSV, and DOT (Graphviz) export formats
 - **Office Types**: Configurable office type categorization
 - **Comprehensive Policies**: Built-in authorization policies
 - **Observer Patterns**: Automatic event handling for data changes
@@ -53,6 +55,22 @@ php artisan vendor:publish --provider="AzahariZaman\BackOffice\BackOfficeService
 
 ## Quick Start
 
+```php
+use AzahariZaman\BackOffice\Models\{Company, Staff};
+use AzahariZaman\BackOffice\Helpers\OrganizationalChart;
+
+// Create hierarchical staff structure
+$ceo = Staff::create([...]);
+$manager = Staff::create(['supervisor_id' => $ceo->id, ...]);
+
+// Generate organizational chart
+$chart = OrganizationalChart::forCompany($company);
+$stats = OrganizationalChart::statistics($company);
+
+// Export chart data
+$csvData = OrganizationalChart::export($company, 'csv');
+```
+
 See the [documentation](docs/README.md) for detailed usage instructions.
 
 ## Documentation
@@ -60,6 +78,7 @@ See the [documentation](docs/README.md) for detailed usage instructions.
 - [Installation Guide](docs/installation.md)
 - [Configuration](docs/configuration.md)
 - [Models & Relationships](docs/models.md)
+- [Organizational Chart & Reporting Lines](docs/organizational-chart.md)
 - [Traits & Behaviors](docs/traits.md)
 - [Policies & Authorization](docs/policies.md)
 - [Console Commands](docs/commands.md)

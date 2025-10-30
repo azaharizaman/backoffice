@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AzahariZaman\BackOffice\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use AzahariZaman\BackOffice\Models\Staff;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use AzahariZaman\BackOffice\Traits\HasHierarchy;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -140,5 +141,49 @@ class Company extends Model
     public function scopeRoot($query)
     {
         return $query->whereNull('parent_company_id');
+    }
+
+    /**
+     * Get organizational chart for this company.
+     */
+    public function getOrganizationalChart(): array
+    {
+        return \AzahariZaman\BackOffice\Helpers\OrganizationalChart::forCompany($this);
+    }
+
+    /**
+     * Get organizational statistics for this company.
+     */
+    public function getOrganizationalStatistics(): array
+    {
+        return \AzahariZaman\BackOffice\Helpers\OrganizationalChart::statistics($this);
+    }
+
+    /**
+     * Get all staff that belong to this company (via offices or departments).
+     *
+     * Returns a collection of Staff models with common relationships eager loaded.
+     */
+    public function getAllStaff()
+    {
+        $query = Staff::query()
+            ->with(['supervisor', 'subordinates', 'office', 'department'])
+            ->where(function ($q) {
+                $q->whereHas('office', function ($q2) {
+                    $q2->where('company_id', $this->id);
+                })->orWhereHas('department', function ($q2) {
+                    $q2->where('company_id', $this->id);
+                });
+            });
+
+        return $query->get()->unique('id')->values();
+    }
+
+    /**
+     * Get top-level staff for this company (staff without supervisors).
+     */
+    public function getTopLevelStaff()
+    {
+        return $this->getAllStaff()->filter(fn (Staff $s) => $s->isTopLevel())->values();
     }
 }

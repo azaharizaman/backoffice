@@ -7,6 +7,7 @@ Welcome to the comprehensive documentation for the BackOffice Laravel package. T
 - [Installation Guide](installation.md)
 - [Configuration](configuration.md)
 - [Models & Relationships](models.md)
+- [Organizational Chart & Reporting Lines](organizational-chart.md)
 - [Staff Resignation Management](resignation.md)
 - [Traits & Behaviors](traits.md)
 - [Policies & Authorization](policies.md)
@@ -30,6 +31,12 @@ The BackOffice package is designed to handle complex organizational structures w
 - Staff can belong to offices and/or departments
 - Multiple unit assignments per staff member
 - Comprehensive staff information tracking
+- **Organizational Chart & Reporting Lines**:
+  - Hierarchical supervisor/subordinate relationships
+  - Comprehensive organizational chart generation
+  - Reporting path analysis and statistics
+  - Multiple export formats (JSON, CSV, DOT/Graphviz)
+  - Reorganization suggestions and analytics
 - **Staff Resignation Management**:
   - Schedule resignations with future dates
   - Automatic resignation processing

@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Models;
 
-use AzahariZaman\BackOffice\Enums\StaffStatus;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use AzahariZaman\BackOffice\Enums\StaffStatus;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Staff Model
  * 
  * Represents staff/employees that can belong to offices and/or departments.
  * Staff can belong to one office and/or one department, and can be part of multiple units.
+ * Supports hierarchical reporting relationships for organizational charts.
  * 
  * @property int $id
  * @property string $employee_id
@@ -27,8 +28,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string|null $phone
  * @property int|null $office_id
  * @property int|null $department_id
+ * @property int|null $supervisor_id
  * @property string|null $position
  * @property \Illuminate\Support\Carbon|null $hire_date
+ * @property \Illuminate\Support\Carbon|null $resignation_date
+ * @property string|null $resignation_reason
+ * @property \Illuminate\Support\Carbon|null $resigned_at
+ * @property \AzahariZaman\BackOffice\Enums\StaffStatus $status
  * @property bool $is_active
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -36,6 +42,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * 
  * @property-read Office|null $office
  * @property-read Department|null $department
+ * @property-read Staff|null $supervisor
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Staff> $subordinates
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Unit> $units
  */
 class Staff extends Model
@@ -330,5 +338,265 @@ class Staff extends Model
         }
 
         return now()->diffInDays($this->resignation_date, false);
+    }
+
+    // ==========================================
+    // REPORTING LINE / ORGANIZATIONAL CHART METHODS
+    // ==========================================
+
+    /**
+     * Check if this staff member has a supervisor.
+     */
+    public function hasSupervisor(): bool
+    {
+        return !is_null($this->supervisor_id);
+    }
+
+    /**
+     * Check if this staff member has subordinates.
+     */
+    public function hasSubordinates(): bool
+    {
+        return $this->subordinates()->exists();
+    }
+
+    /**
+     * Check if this staff member is a manager (has subordinates).
+     */
+    public function isManager(): bool
+    {
+        return $this->hasSubordinates();
+    }
+
+    /**
+     * Check if this staff member is a top-level manager (no supervisor).
+     */
+    public function isTopLevel(): bool
+    {
+        return !$this->hasSupervisor();
+    }
+
+    /**
+     * Get all ancestors (supervisors up the chain).
+     */
+    public function getAncestors(): \Illuminate\Database\Eloquent\Collection
+    {
+        $ancestors = $this->newCollection();
+        $current = $this->supervisor;
+
+        while ($current) {
+            $ancestors->push($current);
+            $current = $current->supervisor;
+        }
+
+        return $ancestors;
+    }
+
+    /**
+     * Get all descendants (subordinates down the chain).
+     */
+    public function getDescendants(): \Illuminate\Database\Eloquent\Collection
+    {
+        $descendants = $this->newCollection();
+        $this->loadDescendantsRecursive($descendants);
+        return $descendants;
+    }
+
+    /**
+     * Recursively load all descendants.
+     */
+    private function loadDescendantsRecursive(\Illuminate\Database\Eloquent\Collection $descendants): void
+    {
+        $directSubordinates = $this->subordinates;
+        
+        foreach ($directSubordinates as $subordinate) {
+            $descendants->push($subordinate);
+            $subordinate->loadDescendantsRecursive($descendants);
+        }
+    }
+
+    /**
+     * Get the reporting path from this staff to root.
+     */
+    public function getReportingPath(): \Illuminate\Database\Eloquent\Collection
+    {
+        $path = $this->newCollection([$this]);
+        $current = $this->supervisor;
+
+        while ($current) {
+            $path->push($current);
+            $current = $current->supervisor;
+        }
+
+        return $path;
+    }
+
+    /**
+     * Get the top-level manager (CEO/President).
+     */
+    public function getTopLevelManager(): ?Staff
+    {
+        $ancestors = $this->getAncestors();
+        return $ancestors->last() ?? ($this->isTopLevel() ? $this : null);
+    }
+
+    /**
+     * Get reporting level (distance from top).
+     */
+    public function getReportingLevel(): int
+    {
+        return $this->getAncestors()->count();
+    }
+
+    /**
+     * Get organizational chart as nested array starting from this staff.
+     */
+    public function getOrganizationalChart(): array
+    {
+        return [
+            'id' => $this->id,
+            'employee_id' => $this->employee_id,
+            'name' => $this->full_name,
+            'position' => $this->position,
+            'email' => $this->email,
+            'office' => $this->office?->name,
+            'department' => $this->department?->name,
+            'level' => $this->getReportingLevel(),
+            'subordinates' => $this->subordinates->map(function ($subordinate) {
+                return $subordinate->getOrganizationalChart();
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get peers (staff with same supervisor).
+     */
+    public function getPeers(): \Illuminate\Database\Eloquent\Collection
+    {
+        if (!$this->hasSupervisor()) {
+            // Top-level staff - peers are other top-level staff in same company
+            $company = $this->getCompany();
+            if (!$company) {
+                return collect();
+            }
+
+            return Staff::whereNull('supervisor_id')
+                        ->where('id', '!=', $this->id)
+                        ->where(function ($query) use ($company) {
+                            $query->whereHas('office', function ($q) use ($company) {
+                                $q->where('company_id', $company->id);
+                            })->orWhereHas('department', function ($q) use ($company) {
+                                $q->where('company_id', $company->id);
+                            });
+                        })
+                        ->get();
+        }
+
+        return $this->supervisor->subordinates()
+                    ->where('id', '!=', $this->id)
+                    ->get();
+    }
+
+    /**
+     * Check if this staff reports to the given staff (directly or indirectly).
+     */
+    public function reportsTo(Staff $potentialSupervisor): bool
+    {
+        return $this->getAncestors()->contains('id', $potentialSupervisor->id);
+    }
+
+    /**
+     * Check if this staff manages the given staff (directly or indirectly).
+     */
+    public function manages(Staff $potentialSubordinate): bool
+    {
+        return $this->getDescendants()->contains('id', $potentialSubordinate->id);
+    }
+
+    /**
+     * Check if setting the given staff as supervisor would create a circular reference.
+     */
+    public function wouldCreateCircularReference(Staff $potentialSupervisor): bool
+    {
+        // Can't report to self
+        if ($this->id === $potentialSupervisor->id) {
+            return true;
+        }
+
+        // Can't report to someone who reports to you
+        return $potentialSupervisor->reportsTo($this);
+    }
+
+    /**
+     * Set supervisor with validation.
+     */
+    public function setSupervisor(?Staff $supervisor): self
+    {
+        if ($supervisor && $this->wouldCreateCircularReference($supervisor)) {
+            throw new \InvalidArgumentException('Cannot set supervisor: would create circular reference');
+        }
+
+        $this->supervisor_id = $supervisor?->id;
+        $this->save();
+
+        return $this;
+    }
+
+    /**
+     * Get team size (number of direct and indirect subordinates).
+     */
+    public function getTeamSize(): int
+    {
+        return $this->getDescendants()->count();
+    }
+
+    /**
+     * Get span of control (number of direct subordinates).
+     */
+    public function getSpanOfControl(): int
+    {
+        return $this->subordinates()->count();
+    }
+
+    /**
+     * Scope to get top-level staff (no supervisor).
+     */
+    public function scopeTopLevel($query)
+    {
+        return $query->whereNull('supervisor_id');
+    }
+
+    /**
+     * Scope to get managers (staff with subordinates).
+     */
+    public function scopeManagers($query)
+    {
+        return $query->has('subordinates');
+    }
+
+    /**
+     * Scope to get staff at specific reporting level.
+     */
+    public function scopeAtLevel($query, int $level)
+    {
+        if ($level === 0) {
+            return $query->whereNull('supervisor_id');
+        }
+
+        // This is more complex and might require raw SQL for efficiency
+        // For now, we'll use a simpler approach
+        return $query->whereHas('supervisor', function ($q) use ($level) {
+            if ($level === 1) {
+                $q->whereNull('supervisor_id');
+            }
+        });
+    }
+
+    /**
+     * Scope to get staff who report to a specific supervisor.
+     */
+    public function scopeReportsTo($query, Staff $supervisor)
+    {
+        return $query->where('supervisor_id', $supervisor->id);
     }
 }

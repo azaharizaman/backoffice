@@ -26,6 +26,7 @@ class StaffObserver
         }
 
         $this->validateResignationData($staff);
+        $this->validateReportingRelationships($staff);
     }
 
     /**
@@ -48,6 +49,7 @@ class StaffObserver
 
         $this->validateResignationData($staff);
         $this->handleResignationStatusChanges($staff);
+        $this->validateReportingRelationships($staff);
     }
 
     /**
@@ -130,6 +132,57 @@ class StaffObserver
             $staff->resignation_reason = null;
             $staff->resigned_at = null;
             $staff->is_active = true;
+        }
+    }
+
+    /**
+     * Validate reporting relationships to prevent circular references and invalid assignments.
+     */
+    private function validateReportingRelationships(Staff $staff): void
+    {
+        // Skip validation if no supervisor is being set
+        if (!$staff->supervisor_id) {
+            return;
+        }
+
+        // Cannot report to self
+        if ($staff->supervisor_id === $staff->id) {
+            throw new \InvalidArgumentException('Staff cannot report to themselves.');
+        }
+
+        // If this is an update, we need to check for circular references
+        if ($staff->exists) {
+            $supervisor = Staff::find($staff->supervisor_id);
+            if ($supervisor && $staff->wouldCreateCircularReference($supervisor)) {
+                throw new \InvalidArgumentException(
+                    'Cannot assign supervisor: would create circular reporting relationship.'
+                );
+            }
+        }
+
+        // Ensure supervisor exists and is active
+        $supervisor = Staff::find($staff->supervisor_id);
+        if (!$supervisor) {
+            throw new \InvalidArgumentException('Supervisor does not exist.');
+        }
+
+        if (!$supervisor->is_active) {
+            throw new \InvalidArgumentException('Cannot report to inactive staff member.');
+        }
+
+        // Ensure supervisor is not resigned
+        if ($supervisor->isResigned()) {
+            throw new \InvalidArgumentException('Cannot report to resigned staff member.');
+        }
+
+        // Optional: Ensure supervisor is in same company (if business rule requires it)
+        $staffCompany = $staff->getCompany();
+        $supervisorCompany = $supervisor->getCompany();
+        
+        if ($staffCompany && $supervisorCompany && $staffCompany->id !== $supervisorCompany->id) {
+            throw new \InvalidArgumentException(
+                'Staff and supervisor must belong to the same company.'
+            );
         }
     }
 }
