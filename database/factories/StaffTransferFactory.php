@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Database\Factories;
 
-use AzahariZaman\BackOffice\Enums\StaffTransferStatus;
+use AzahariZaman\BackOffice\Models\Staff;
+use AzahariZaman\BackOffice\Models\Office;
 use AzahariZaman\BackOffice\Models\Company;
 use AzahariZaman\BackOffice\Models\Department;
-use AzahariZaman\BackOffice\Models\Office;
-use AzahariZaman\BackOffice\Models\Staff;
 use AzahariZaman\BackOffice\Models\StaffTransfer;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use AzahariZaman\BackOffice\Enums\StaffTransferStatus;
 
 /**
  * @extends Factory<StaffTransfer>
@@ -24,34 +24,34 @@ class StaffTransferFactory extends Factory
         $company = Company::factory()->create();
         $sourceOffice = Office::factory()->for($company)->create();
         $targetOffice = Office::factory()->for($company)->create();
-        $staff = Staff::factory()->for($company)->for($sourceOffice)->create();
+        $staff = Staff::factory()->for($sourceOffice)->create();
 
         return [
             'staff_id' => $staff->id,
-            'current_office_id' => $sourceOffice->id,
-            'new_office_id' => $targetOffice->id,
-            'current_department_id' => null,
-            'new_department_id' => null,
-            'current_supervisor_id' => null,
-            'new_supervisor_id' => null,
-            'current_position' => null,
-            'new_position' => null,
+            'from_office_id' => $sourceOffice->id,
+            'to_office_id' => $targetOffice->id,
+            'from_department_id' => null,
+            'to_department_id' => null,
+            'from_supervisor_id' => null,
+            'to_supervisor_id' => null,
+            'from_position' => null,
+            'to_position' => null,
             'effective_date' => $this->faker->dateTimeBetween('now', '+1 month'),
             'reason' => $this->faker->sentence(),
             'status' => StaffTransferStatus::PENDING,
-            'requested_by' => $staff->id,
-            'requested_at' => now(),
-            'approved_by' => null,
+            'requested_by_id' => $staff->id,
+            'requested_at' => $this->faker->unique()->dateTimeBetween('-1 month', 'now'),
+            'approved_by_id' => null,
             'approved_at' => null,
-            'approved_by_comment' => null,
-            'rejected_by' => null,
+            'rejected_by_id' => null,
             'rejected_at' => null,
             'rejection_reason' => null,
-            'cancelled_by' => null,
-            'cancelled_at' => null,
-            'cancellation_reason' => null,
+            'processed_by_id' => null,
             'completed_at' => null,
+            'cancelled_at' => null,
             'notes' => null,
+            'is_immediate' => false,
+            'metadata' => null,
         ];
     }
 
@@ -62,6 +62,7 @@ class StaffTransferFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'effective_date' => now(),
+            'is_immediate' => true,
         ]);
     }
 
@@ -88,15 +89,15 @@ class StaffTransferFactory extends Factory
     /**
      * Configure the factory for approved status.
      */
-    public function approved(?string $approvedBy = null): static
+    public function approved(?string $notes = null): static
     {
         $staff = Staff::first() ?? Staff::factory()->create();
 
         return $this->state(fn (array $attributes) => [
             'status' => StaffTransferStatus::APPROVED,
-            'approved_by' => $staff->id,
+            'approved_by_id' => $staff->id,
             'approved_at' => now(),
-            'approved_by_comment' => $approvedBy ?? 'Transfer approved',
+            'notes' => $notes ?? 'Transfer approved',
         ]);
     }
 
@@ -109,7 +110,7 @@ class StaffTransferFactory extends Factory
 
         return $this->state(fn (array $attributes) => [
             'status' => StaffTransferStatus::REJECTED,
-            'rejected_by' => $staff->id,
+            'rejected_by_id' => $staff->id,
             'rejected_at' => now(),
             'rejection_reason' => $reason ?? 'Transfer rejected',
         ]);
@@ -120,13 +121,10 @@ class StaffTransferFactory extends Factory
      */
     public function cancelled(?string $reason = null): static
     {
-        $staff = Staff::first() ?? Staff::factory()->create();
-
         return $this->state(fn (array $attributes) => [
             'status' => StaffTransferStatus::CANCELLED,
-            'cancelled_by' => $staff->id,
             'cancelled_at' => now(),
-            'cancellation_reason' => $reason ?? 'Transfer cancelled',
+            'notes' => $reason ?? 'Transfer cancelled',
         ]);
     }
 
@@ -147,16 +145,15 @@ class StaffTransferFactory extends Factory
     public function withDepartmentChange(): static
     {
         return $this->state(function (array $attributes) {
-            $company = Company::find($attributes['staff_id']) 
-                ? Staff::find($attributes['staff_id'])->company 
-                : Company::factory()->create();
+            $office = Office::find($attributes['from_office_id']);
+            $company = $office ? $office->company : Company::factory()->create();
 
             $sourceDepartment = Department::factory()->for($company)->create();
             $targetDepartment = Department::factory()->for($company)->create();
 
             return [
-                'current_department_id' => $sourceDepartment->id,
-                'new_department_id' => $targetDepartment->id,
+                'from_department_id' => $sourceDepartment->id,
+                'to_department_id' => $targetDepartment->id,
             ];
         });
     }
@@ -167,16 +164,14 @@ class StaffTransferFactory extends Factory
     public function withSupervisorChange(): static
     {
         return $this->state(function (array $attributes) {
-            $company = Company::find($attributes['staff_id']) 
-                ? Staff::find($attributes['staff_id'])->company 
-                : Company::factory()->create();
+            $office = Office::find($attributes['from_office_id']) ?? Office::factory()->create();
 
-            $currentSupervisor = Staff::factory()->for($company)->create();
-            $newSupervisor = Staff::factory()->for($company)->create();
+            $currentSupervisor = Staff::factory()->for($office)->create();
+            $newSupervisor = Staff::factory()->for($office)->create();
 
             return [
-                'current_supervisor_id' => $currentSupervisor->id,
-                'new_supervisor_id' => $newSupervisor->id,
+                'from_supervisor_id' => $currentSupervisor->id,
+                'to_supervisor_id' => $newSupervisor->id,
             ];
         });
     }
@@ -187,8 +182,8 @@ class StaffTransferFactory extends Factory
     public function withPositionChange(): static
     {
         return $this->state(fn (array $attributes) => [
-            'current_position' => $this->faker->jobTitle(),
-            'new_position' => $this->faker->jobTitle(),
+            'from_position' => $this->faker->jobTitle(),
+            'to_position' => $this->faker->jobTitle(),
         ]);
     }
 

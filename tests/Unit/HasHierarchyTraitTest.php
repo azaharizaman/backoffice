@@ -76,6 +76,7 @@ class HasHierarchyTraitTest extends TestCase
     {
         $rootCompany = Company::factory()->create([
             'name' => 'Root Company',
+            'parent_company_id' => null,
             'is_active' => true,
         ]);
 
@@ -91,12 +92,16 @@ class HasHierarchyTraitTest extends TestCase
             'is_active' => true,
         ]);
 
-        $path = $level2Company->getPath();
+        $path = $level2Company->fresh()->getPath();
         
-        $this->assertCount(3, $path);
-        $this->assertEquals($rootCompany->id, $path[0]->id);
-        $this->assertEquals($level1Company->id, $path[1]->id);
-        $this->assertEquals($level2Company->id, $path[2]->id);
+        $this->assertCount(3, $path, 'Path should contain all 3 companies');
+        $this->assertTrue($path->contains('name', 'Root Company'), 'Path should contain root');
+        $this->assertTrue($path->contains('name', 'Level 1 Company'), 'Path should contain level 1');
+        $this->assertTrue($path->contains('name', 'Level 2 Company'), 'Path should contain level 2');
+        
+        // Verify order
+        $this->assertEquals('Root Company', $path->first()->name, 'Root should be first');
+        $this->assertEquals('Level 2 Company', $path->last()->name, 'Level 2 should be last');
     }
 
     /** @test */

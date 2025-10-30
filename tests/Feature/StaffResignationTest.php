@@ -33,14 +33,16 @@ class StaffResignationTest extends TestCase
         $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
+
+        // Attach office type using many-to-many relationship
+        $office->officeTypes()->attach($officeType);
 
         $department = Department::factory()->create([
             'name' => 'IT Department',
             'code' => 'IT',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'is_active' => true,
         ]);
 
@@ -53,7 +55,7 @@ class StaffResignationTest extends TestCase
         $structure = $this->createTestStructure();
 
         $staff = Staff::factory()->create([
-            'name' => 'John Doe',
+            'first_name' => 'John', 'last_name' => 'Doe',
             'email' => 'john@example.com',
             'employee_id' => 'EMP001',
             'department_id' => $structure['department']->id,
@@ -66,15 +68,12 @@ class StaffResignationTest extends TestCase
 
         $staff->scheduleResignation($resignationDate, $resignationReason);
 
-        $this->assertDatabaseHas('backoffice_staff', [
-            'id' => $staff->id,
-            'resignation_date' => $resignationDate->toDateString(),
-            'resignation_reason' => $resignationReason,
-            'status' => StaffStatus::ACTIVE->value,
-            'resigned_at' => null,
-        ]);
-
-        $this->assertTrue($staff->fresh()->hasPendingResignation());
+        $staff->refresh();
+        $this->assertEquals($resignationDate->toDateString(), $staff->resignation_date->toDateString());
+        $this->assertEquals($resignationReason, $staff->resignation_reason);
+        $this->assertEquals(StaffStatus::ACTIVE, $staff->status);
+        $this->assertNull($staff->resigned_at);
+        $this->assertTrue($staff->hasPendingResignation());
     }
 
     /** @test */
@@ -82,15 +81,22 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
+        // Create staff without resignation_date to avoid observer validation
         $staff = Staff::factory()->create([
-            'name' => 'Jane Smith',
+            'first_name' => 'Jane', 'last_name' => 'Smith',
             'email' => 'jane@example.com',
             'employee_id' => 'EMP002',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'status' => StaffStatus::ACTIVE,
+            'is_active' => true,
+        ]);
+        
+        // Set resignation date using updateQuietly to bypass observer
+        $staff->updateQuietly([
             'resignation_date' => Carbon::now()->subDays(1),
             'resignation_reason' => 'Personal reasons',
-            'is_active' => true,
+            'resigned_at' => null,
         ]);
 
         $staff->processResignation();
@@ -108,7 +114,7 @@ class StaffResignationTest extends TestCase
         $structure = $this->createTestStructure();
 
         $staff = Staff::factory()->create([
-            'name' => 'Bob Wilson',
+            'first_name' => 'Bob', 'last_name' => 'Wilson',
             'email' => 'bob@example.com',
             'employee_id' => 'EMP003',
             'department_id' => $structure['department']->id,
@@ -133,22 +139,28 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        // Staff with resignation due yesterday
+        // Staff with resignation due yesterday - create without date then updateQuietly
         $staffPastDue = Staff::factory()->create([
-            'name' => 'Past Due Staff',
+            'first_name' => 'Past', 'last_name' => 'Due Staff',
             'email' => 'pastdue@example.com',
             'employee_id' => 'EMP004',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'status' => StaffStatus::ACTIVE,
-            'resignation_date' => Carbon::now()->subDays(1),
             'is_active' => true,
+        ]);
+        
+        $staffPastDue->updateQuietly([
+            'resignation_date' => Carbon::now()->subDays(1),
+            'resigned_at' => null,
         ]);
 
         // Staff with resignation due in future
         $staffFuture = Staff::factory()->create([
-            'name' => 'Future Staff',
+            'first_name' => 'Future', 'last_name' => 'Staff',
             'email' => 'future@example.com',
             'employee_id' => 'EMP005',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'status' => StaffStatus::ACTIVE,
             'resignation_date' => Carbon::now()->addDays(5),
@@ -165,12 +177,13 @@ class StaffResignationTest extends TestCase
         $structure = $this->createTestStructure();
 
         $staff = Staff::factory()->create([
-            'name' => 'Future Resignation',
+            'first_name' => 'Future', 'last_name' => 'Resignation',
             'email' => 'future@example.com',
             'employee_id' => 'EMP006',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'status' => StaffStatus::ACTIVE,
-            'resignation_date' => Carbon::now()->addDays(10),
+            'resignation_date' => Carbon::now()->addDays(10)->startOfDay(),
             'is_active' => true,
         ]);
 
@@ -184,33 +197,40 @@ class StaffResignationTest extends TestCase
         $structure = $this->createTestStructure();
 
         $activStaff = Staff::factory()->create([
-            'name' => 'Active Staff',
+            'first_name' => 'Active', 'last_name' => 'Staff',
             'email' => 'active@example.com',
             'employee_id' => 'EMP007',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
         ]);
 
         $pendingResignationStaff = Staff::factory()->create([
-            'name' => 'Pending Resignation',
+            'first_name' => 'Pending', 'last_name' => 'Resignation',
             'email' => 'pending@example.com',
             'employee_id' => 'EMP008',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'status' => StaffStatus::ACTIVE,
             'resignation_date' => Carbon::now()->addDays(5),
             'is_active' => true,
         ]);
 
+        // Create resigned staff without past date, then updateQuietly
         $resignedStaff = Staff::factory()->create([
-            'name' => 'Already Resigned',
+            'first_name' => 'Already', 'last_name' => 'Resigned',
             'email' => 'resigned@example.com',
             'employee_id' => 'EMP009',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'status' => StaffStatus::RESIGNED,
+            'is_active' => false,
+        ]);
+        
+        $resignedStaff->updateQuietly([
             'resignation_date' => Carbon::now()->subDays(5),
             'resigned_at' => Carbon::now()->subDays(5),
-            'is_active' => false,
         ]);
 
         $pendingStaff = Staff::pendingResignation()->get();
@@ -227,7 +247,7 @@ class StaffResignationTest extends TestCase
         $structure = $this->createTestStructure();
 
         $activeStaff = Staff::factory()->create([
-            'name' => 'Active Staff',
+            'first_name' => 'Active', 'last_name' => 'Staff',
             'email' => 'active@example.com',
             'employee_id' => 'EMP010',
             'department_id' => $structure['department']->id,
@@ -236,7 +256,7 @@ class StaffResignationTest extends TestCase
         ]);
 
         $resignedStaff = Staff::factory()->create([
-            'name' => 'Resigned Staff',
+            'first_name' => 'Resigned', 'last_name' => 'Staff',
             'email' => 'resigned@example.com',
             'employee_id' => 'EMP011',
             'department_id' => $structure['department']->id,
@@ -261,7 +281,7 @@ class StaffResignationTest extends TestCase
         $this->expectExceptionMessage('Resignation date cannot be in the past for new staff entries.');
 
         Staff::factory()->create([
-            'name' => 'Invalid Staff',
+            'first_name' => 'Invalid', 'last_name' => 'Staff',
             'email' => 'invalid@example.com',
             'employee_id' => 'EMP012',
             'department_id' => $structure['department']->id,
@@ -277,7 +297,7 @@ class StaffResignationTest extends TestCase
         $structure = $this->createTestStructure();
 
         $staff = Staff::factory()->create([
-            'name' => 'Auto Resigned',
+            'first_name' => 'Auto', 'last_name' => 'Resigned',
             'email' => 'auto@example.com',
             'employee_id' => 'EMP013',
             'department_id' => $structure['department']->id,
@@ -298,18 +318,38 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
+        // Create active staff first
         $staff = Staff::factory()->create([
-            'name' => 'Reactivated Staff',
+            'first_name' => 'Reactivated', 'last_name' => 'Staff',
             'email' => 'reactivated@example.com',
             'employee_id' => 'EMP014',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
-            'status' => StaffStatus::RESIGNED,
-            'resignation_date' => Carbon::now()->subDays(10),
-            'resignation_reason' => 'Previous job',
-            'resigned_at' => Carbon::now()->subDays(10),
-            'is_active' => false,
+            'status' => StaffStatus::ACTIVE,
+            'is_active' => true,
         ]);
-
+        
+        // Schedule resignation in future
+        $staff->scheduleResignation(
+            Carbon::now()->addDays(5),
+            'Previous job'
+        );
+        
+        // Process the resignation to make staff resigned
+        $staff->updateQuietly([
+            'resignation_date' => Carbon::now()->subDays(10),
+            'resigned_at' => Carbon::now()->subDays(10),
+        ]);
+        $staff->refresh();
+        $staff->update(['status' => StaffStatus::RESIGNED]);
+        $staff->refresh();
+        
+        // Verify staff is resigned with resignation data
+        $this->assertEquals(StaffStatus::RESIGNED, $staff->status);
+        $this->assertNotNull($staff->resignation_date);
+        $this->assertNotNull($staff->resigned_at);
+        
+        // Now reactivate the staff
         $staff->update(['status' => StaffStatus::ACTIVE]);
 
         $freshStaff = $staff->fresh();
@@ -326,7 +366,7 @@ class StaffResignationTest extends TestCase
         $structure = $this->createTestStructure();
 
         $activeStaff = Staff::factory()->create([
-            'name' => 'Active Staff',
+            'first_name' => 'Active', 'last_name' => 'Staff',
             'email' => 'active@example.com',
             'employee_id' => 'EMP015',
             'department_id' => $structure['department']->id,
@@ -335,7 +375,7 @@ class StaffResignationTest extends TestCase
         ]);
 
         $resignedStaff = Staff::factory()->create([
-            'name' => 'Resigned Staff',
+            'first_name' => 'Resigned', 'last_name' => 'Staff',
             'email' => 'resigned@example.com',
             'employee_id' => 'EMP016',
             'department_id' => $structure['department']->id,

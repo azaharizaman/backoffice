@@ -31,14 +31,16 @@ class StaffTest extends TestCase
         $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
+
+        // Attach office type using many-to-many relationship
+        $office->officeTypes()->attach($officeType);
 
         $department = Department::factory()->create([
             'name' => 'IT Department',
             'code' => 'IT',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'is_active' => true,
         ]);
 
@@ -51,7 +53,8 @@ class StaffTest extends TestCase
         $structure = $this->createTestStructure();
 
         $staff = Staff::factory()->create([
-            'name' => 'John Doe',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
             'email' => 'john@example.com',
             'employee_id' => 'EMP001',
             'position' => 'Software Developer',
@@ -61,7 +64,8 @@ class StaffTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('backoffice_staff', [
-            'name' => 'John Doe',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
             'email' => 'john@example.com',
             'employee_id' => 'EMP001',
             'position' => 'Software Developer',
@@ -70,7 +74,7 @@ class StaffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->assertEquals('John Doe', $staff->name);
+        $this->assertEquals('John Doe', $staff->full_name);
         $this->assertEquals('john@example.com', $staff->email);
         $this->assertEquals($structure['department']->id, $staff->department_id);
     }
@@ -81,7 +85,7 @@ class StaffTest extends TestCase
         $structure = $this->createTestStructure();
 
         $staff = Staff::factory()->create([
-            'name' => 'Jane Smith',
+            'first_name' => 'Jane', 'last_name' => 'Smith',
             'email' => 'jane@example.com',
             'employee_id' => 'EMP002',
             'position' => 'Project Manager',
@@ -100,20 +104,22 @@ class StaffTest extends TestCase
         $structure = $this->createTestStructure();
 
         $supervisor = Staff::factory()->create([
-            'name' => 'Senior Manager',
+            'first_name' => 'Senior', 'last_name' => 'Manager',
             'email' => 'manager@example.com',
             'employee_id' => 'MGR001',
             'position' => 'Department Manager',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
         ]);
 
         $subordinate = Staff::factory()->create([
-            'name' => 'Junior Developer',
+            'first_name' => 'Junior', 'last_name' => 'Developer',
             'email' => 'junior@example.com',
             'employee_id' => 'JUN001',
             'position' => 'Junior Developer',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'supervisor_id' => $supervisor->id,
             'status' => StaffStatus::ACTIVE,
@@ -131,7 +137,7 @@ class StaffTest extends TestCase
         $structure = $this->createTestStructure();
 
         $activeStaff = Staff::factory()->create([
-            'name' => 'Active Employee',
+            'first_name' => 'Active', 'last_name' => 'Employee',
             'email' => 'active@example.com',
             'employee_id' => 'ACT001',
             'department_id' => $structure['department']->id,
@@ -140,7 +146,7 @@ class StaffTest extends TestCase
         ]);
 
         $terminatedStaff = Staff::factory()->create([
-            'name' => 'Terminated Employee',
+            'first_name' => 'Terminated', 'last_name' => 'Employee',
             'email' => 'terminated@example.com',
             'employee_id' => 'TER001',
             'department_id' => $structure['department']->id,
@@ -166,12 +172,12 @@ class StaffTest extends TestCase
         $hrDepartment = Department::factory()->create([
             'name' => 'HR Department',
             'code' => 'HR',
-            'office_id' => $structure['office']->id,
+            'company_id' => $structure['company']->id,
             'is_active' => true,
         ]);
 
         $itStaff = Staff::factory()->create([
-            'name' => 'IT Staff',
+            'first_name' => 'IT', 'last_name' => 'Staff',
             'email' => 'it@example.com',
             'employee_id' => 'IT001',
             'department_id' => $structure['department']->id,
@@ -180,7 +186,7 @@ class StaffTest extends TestCase
         ]);
 
         $hrStaff = Staff::factory()->create([
-            'name' => 'HR Staff',
+            'first_name' => 'HR', 'last_name' => 'Staff',
             'email' => 'hr@example.com',
             'employee_id' => 'HR001',
             'department_id' => $hrDepartment->id,
@@ -188,7 +194,7 @@ class StaffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $itDepartmentStaff = Staff::byDepartment($structure['department']->id)->get();
+        $itDepartmentStaff = Staff::inDepartment($structure['department']->id)->get();
         
         $this->assertCount(1, $itDepartmentStaff);
         $this->assertTrue($itDepartmentStaff->contains('id', $itStaff->id));
@@ -201,7 +207,7 @@ class StaffTest extends TestCase
         $structure = $this->createTestStructure();
 
         $activeStaff = Staff::factory()->create([
-            'name' => 'Active Staff',
+            'first_name' => 'Active', 'last_name' => 'Staff',
             'email' => 'active@example.com',
             'employee_id' => 'ACT001',
             'department_id' => $structure['department']->id,
@@ -210,7 +216,7 @@ class StaffTest extends TestCase
         ]);
 
         $inactiveStaff = Staff::factory()->create([
-            'name' => 'Inactive Staff',
+            'first_name' => 'Inactive', 'last_name' => 'Staff',
             'email' => 'inactive@example.com',
             'employee_id' => 'INA001',
             'department_id' => $structure['department']->id,
@@ -231,20 +237,22 @@ class StaffTest extends TestCase
         $structure = $this->createTestStructure();
 
         $manager = Staff::factory()->create([
-            'name' => 'Department Manager',
+            'first_name' => 'Department', 'last_name' => 'Manager',
             'email' => 'manager@example.com',
             'employee_id' => 'MGR001',
             'position' => 'Manager',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
         ]);
 
         $teamLead = Staff::factory()->create([
-            'name' => 'Team Lead',
+            'first_name' => 'Team', 'last_name' => 'Lead',
             'email' => 'lead@example.com',
             'employee_id' => 'LEAD001',
             'position' => 'Team Lead',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'supervisor_id' => $manager->id,
             'status' => StaffStatus::ACTIVE,
@@ -252,10 +260,11 @@ class StaffTest extends TestCase
         ]);
 
         $developer = Staff::factory()->create([
-            'name' => 'Developer',
+            'first_name' => 'Developer', 'last_name' => 'Developer',
             'email' => 'dev@example.com',
             'employee_id' => 'DEV001',
             'position' => 'Developer',
+            'office_id' => $structure['office']->id,
             'department_id' => $structure['department']->id,
             'supervisor_id' => $teamLead->id,
             'status' => StaffStatus::ACTIVE,
@@ -280,7 +289,7 @@ class StaffTest extends TestCase
         $structure = $this->createTestStructure();
 
         Staff::factory()->create([
-            'name' => 'First Employee',
+            'first_name' => 'First', 'last_name' => 'Employee',
             'email' => 'first@example.com',
             'employee_id' => 'EMP001',
             'department_id' => $structure['department']->id,
@@ -291,7 +300,7 @@ class StaffTest extends TestCase
         $this->expectException(\Illuminate\Database\QueryException::class);
 
         Staff::factory()->create([
-            'name' => 'Second Employee',
+            'first_name' => 'Second', 'last_name' => 'Employee',
             'email' => 'second@example.com',
             'employee_id' => 'EMP001', // Same employee ID
             'department_id' => $structure['department']->id,
@@ -306,7 +315,7 @@ class StaffTest extends TestCase
         $structure = $this->createTestStructure();
 
         Staff::factory()->create([
-            'name' => 'First Employee',
+            'first_name' => 'First', 'last_name' => 'Employee',
             'email' => 'employee@example.com',
             'employee_id' => 'EMP001',
             'department_id' => $structure['department']->id,
@@ -317,7 +326,7 @@ class StaffTest extends TestCase
         $this->expectException(\Illuminate\Database\QueryException::class);
 
         Staff::factory()->create([
-            'name' => 'Second Employee',
+            'first_name' => 'Second', 'last_name' => 'Employee',
             'email' => 'employee@example.com', // Same email
             'employee_id' => 'EMP002',
             'department_id' => $structure['department']->id,
@@ -327,12 +336,15 @@ class StaffTest extends TestCase
     }
 
     /** @test */
-    public function it_requires_name_email_and_department()
+    public function it_requires_first_name_last_name_and_email()
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
         
         Staff::factory()->create([
             'employee_id' => 'EMP001',
+            'first_name' => null,
+            'last_name' => null,
+            'email' => null,
             'status' => StaffStatus::ACTIVE,
         ]);
     }
@@ -343,7 +355,7 @@ class StaffTest extends TestCase
         $structure = $this->createTestStructure();
 
         $staff = Staff::factory()->create([
-            'name' => 'Test Employee',
+            'first_name' => 'Test', 'last_name' => 'Employee',
             'email' => 'test@example.com',
             'employee_id' => 'EMP001',
             'department_id' => $structure['department']->id,

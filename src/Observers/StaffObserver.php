@@ -124,8 +124,9 @@ class StaffObserver
         }
 
         // If changing FROM resigned status to active status
+        $originalStatus = $staff->getOriginal('status');
         if ($staff->isDirty('status') && 
-            $staff->getOriginal('status') === StaffStatus::RESIGNED->value && 
+            ($originalStatus === StaffStatus::RESIGNED->value || $originalStatus === StaffStatus::RESIGNED) && 
             $staff->status === StaffStatus::ACTIVE) {
             // Clear resignation data when reactivating
             $staff->resignation_date = null;

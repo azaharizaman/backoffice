@@ -2,9 +2,9 @@
 
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
-use AzahariZaman\BackOffice\Tests\TestCase;
-use AzahariZaman\BackOffice\Models\Company;
 use AzahariZaman\BackOffice\Models\Office;
+use AzahariZaman\BackOffice\Models\Company;
+use AzahariZaman\BackOffice\Tests\TestCase;
 use AzahariZaman\BackOffice\Models\OfficeType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -33,21 +33,23 @@ class OfficeTest extends TestCase
             'code' => 'MAIN',
             'description' => 'Main office location',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
+
+        // Attach office type using many-to-many relationship
+        $office->officeTypes()->attach($officeType);
 
         $this->assertDatabaseHas('backoffice_offices', [
             'name' => 'Main Office',
             'code' => 'MAIN',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
         $this->assertEquals('Main Office', $office->name);
         $this->assertEquals($company->id, $office->company_id);
-        $this->assertEquals($officeType->id, $office->office_type_id);
+        $this->assertTrue($office->officeTypes->contains($officeType));
     }
 
     /** @test */
@@ -68,7 +70,7 @@ class OfficeTest extends TestCase
         $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
@@ -94,12 +96,15 @@ class OfficeTest extends TestCase
         $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
-        $this->assertEquals($officeType->id, $office->officeType->id);
-        $this->assertEquals('Regional Office', $office->officeType->name);
+        // Attach office type using many-to-many relationship
+        $office->officeTypes()->attach($officeType);
+
+        $this->assertTrue($office->officeTypes->contains($officeType));
+        $this->assertEquals('Regional Office', $office->officeTypes->first()->name);
     }
 
     /** @test */
@@ -121,7 +126,7 @@ class OfficeTest extends TestCase
             'name' => 'Parent Office',
             'code' => 'PARENT',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
@@ -129,7 +134,7 @@ class OfficeTest extends TestCase
             'name' => 'Child Office',
             'code' => 'CHILD',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'parent_office_id' => $parentOffice->id,
             'is_active' => true,
         ]);
@@ -158,7 +163,7 @@ class OfficeTest extends TestCase
             'name' => 'Root Office',
             'code' => 'ROOT',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
@@ -166,7 +171,7 @@ class OfficeTest extends TestCase
             'name' => 'Level 1 Office',
             'code' => 'L1',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'parent_office_id' => $rootOffice->id,
             'is_active' => true,
         ]);
@@ -175,7 +180,7 @@ class OfficeTest extends TestCase
             'name' => 'Level 2 Office',
             'code' => 'L2',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'parent_office_id' => $level1Office->id,
             'is_active' => true,
         ]);
@@ -204,7 +209,7 @@ class OfficeTest extends TestCase
             'name' => 'Active Office',
             'code' => 'ACTIVE',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
@@ -212,7 +217,7 @@ class OfficeTest extends TestCase
             'name' => 'Inactive Office',
             'code' => 'INACTIVE',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => false,
         ]);
 
@@ -247,18 +252,18 @@ class OfficeTest extends TestCase
         $office1 = Office::factory()->create([
             'name' => 'Office 1',
             'company_id' => $company1->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
         $office2 = Office::factory()->create([
             'name' => 'Office 2',
             'company_id' => $company2->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
-        $company1Offices = Office::byCompany($company1->id)->get();
+        $company1Offices = Office::forCompany($company1->id)->get();
         
         $this->assertCount(1, $company1Offices);
         $this->assertTrue($company1Offices->contains('id', $office1->id));
@@ -289,18 +294,20 @@ class OfficeTest extends TestCase
         $branchOffice = Office::factory()->create([
             'name' => 'Branch Office',
             'company_id' => $company->id,
-            'office_type_id' => $branchType->id,
+            
             'is_active' => true,
         ]);
+        $branchOffice->officeTypes()->attach($branchType);
 
         $hqOffice = Office::factory()->create([
             'name' => 'HQ Office',
             'company_id' => $company->id,
-            'office_type_id' => $hqType->id,
+            
             'is_active' => true,
         ]);
+        $hqOffice->officeTypes()->attach($hqType);
 
-        $branchOffices = Office::byType($branchType->id)->get();
+        $branchOffices = Office::withType($branchType->id)->get();
         
         $this->assertCount(1, $branchOffices);
         $this->assertTrue($branchOffices->contains('id', $branchOffice->id));
@@ -308,11 +315,13 @@ class OfficeTest extends TestCase
     }
 
     /** @test */
-    public function it_requires_name_and_company_and_office_type()
+    public function it_requires_name_and_company()
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
         
         Office::factory()->create([
+            'name' => null,
+            'company_id' => null,
             'code' => 'TEST',
             'is_active' => true,
         ]);
@@ -335,8 +344,9 @@ class OfficeTest extends TestCase
 
         $office = Office::factory()->create([
             'name' => 'Test Office',
+            'code' => null,
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
@@ -361,7 +371,7 @@ class OfficeTest extends TestCase
         $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
         ]);
 
         $this->assertTrue($office->is_active);

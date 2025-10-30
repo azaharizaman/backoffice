@@ -28,20 +28,22 @@ class StaffTransferObserver
     {
         // Capture current staff data for the transfer record
         $staff = $transfer->staff;
+        $attributes = $transfer->getAttributes();
         
-        if (!$transfer->from_office_id && $staff->office_id) {
+        // Only auto-fill from_* fields if they weren't explicitly set in the attributes
+        if (!array_key_exists('from_office_id', $attributes) && $staff->office_id) {
             $transfer->from_office_id = $staff->office_id;
         }
         
-        if (!$transfer->from_department_id && $staff->department_id) {
+        if (!array_key_exists('from_department_id', $attributes) && $staff->department_id) {
             $transfer->from_department_id = $staff->department_id;
         }
         
-        if (!$transfer->from_supervisor_id && $staff->supervisor_id) {
+        if (!array_key_exists('from_supervisor_id', $attributes) && $staff->supervisor_id) {
             $transfer->from_supervisor_id = $staff->supervisor_id;
         }
         
-        if (!$transfer->from_position && $staff->position) {
+        if (!array_key_exists('from_position', $attributes) && $staff->position) {
             $transfer->from_position = $staff->position;
         }
         
@@ -319,14 +321,18 @@ class StaffTransferObserver
             $updates['office_id'] = $transfer->to_office_id;
         }
         
-        // Update department assignment
-        if ($transfer->to_department_id !== $staff->department_id) {
-            $updates['department_id'] = $transfer->to_department_id;
+        // Update department assignment (only if from_department_id is set, indicating a department change)
+        if ($transfer->from_department_id !== null) {
+            if ($transfer->to_department_id !== $staff->department_id) {
+                $updates['department_id'] = $transfer->to_department_id;
+            }
         }
         
-        // Update supervisor assignment
-        if ($transfer->to_supervisor_id !== $staff->supervisor_id) {
-            $updates['supervisor_id'] = $transfer->to_supervisor_id;
+        // Update supervisor assignment (only if from_supervisor_id is set, indicating a supervisor change)
+        if ($transfer->from_supervisor_id !== null) {
+            if ($transfer->to_supervisor_id !== $staff->supervisor_id) {
+                $updates['supervisor_id'] = $transfer->to_supervisor_id;
+            }
         }
         
         // Update position

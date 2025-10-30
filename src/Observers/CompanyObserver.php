@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Observers;
 
+use AzahariZaman\BackOffice\Exceptions\CircularReferenceException;
 use AzahariZaman\BackOffice\Models\Company;
 
 /**
@@ -20,7 +21,7 @@ class CompanyObserver
     {
         // Prevent circular references
         if ($this->wouldCreateCircularReference($company)) {
-            throw new \InvalidArgumentException('Cannot create circular reference in company hierarchy.');
+            throw new CircularReferenceException('Cannot set parent: Circular reference detected');
         }
     }
 
@@ -39,7 +40,7 @@ class CompanyObserver
     {
         // Prevent circular references when updating parent
         if ($company->isDirty('parent_company_id') && $this->wouldCreateCircularReference($company)) {
-            throw new \InvalidArgumentException('Cannot create circular reference in company hierarchy.');
+            throw new CircularReferenceException('Cannot set parent: Circular reference detected');
         }
     }
 

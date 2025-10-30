@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
+use Carbon\Carbon;
+use AzahariZaman\BackOffice\Models\Staff;
+use AzahariZaman\BackOffice\Models\Office;
+use AzahariZaman\BackOffice\Models\Company;
+use AzahariZaman\BackOffice\Tests\TestCase;
 use AzahariZaman\BackOffice\Enums\StaffStatus;
+use AzahariZaman\BackOffice\Models\Department;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use AzahariZaman\BackOffice\Enums\StaffTransferStatus;
 use AzahariZaman\BackOffice\Exceptions\InvalidTransferException;
-use AzahariZaman\BackOffice\Models\Company;
-use AzahariZaman\BackOffice\Models\Department;
-use AzahariZaman\BackOffice\Models\Office;
-use AzahariZaman\BackOffice\Models\Staff;
-use AzahariZaman\BackOffice\Models\StaffTransfer;
-use AzahariZaman\BackOffice\Tests\TestCase;
-use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class StaffTransferTest extends TestCase
 {
@@ -73,7 +73,6 @@ class StaffTransferTest extends TestCase
             'first_name' => 'Current',
             'last_name' => 'Supervisor',
             'email' => 'supervisor@test.com',
-            'company_id' => $this->company->id,
             'office_id' => $this->sourceOffice->id,
             'is_active' => true,
         ]);
@@ -83,7 +82,6 @@ class StaffTransferTest extends TestCase
             'first_name' => 'New',
             'last_name' => 'Supervisor',
             'email' => 'newsupervisor@test.com',
-            'company_id' => $this->company->id,
             'office_id' => $this->targetOffice->id,
             'is_active' => true,
         ]);
@@ -93,7 +91,6 @@ class StaffTransferTest extends TestCase
             'first_name' => 'Test',
             'last_name' => 'Employee',
             'email' => 'employee@test.com',
-            'company_id' => $this->company->id,
             'office_id' => $this->sourceOffice->id,
             'department_id' => $this->sourceDepartment->id,
             'supervisor_id' => $this->supervisor->id,
@@ -105,7 +102,6 @@ class StaffTransferTest extends TestCase
             'first_name' => 'HR',
             'last_name' => 'Manager',
             'email' => 'hr@test.com',
-            'company_id' => $this->company->id,
             'office_id' => $this->sourceOffice->id,
             'is_active' => true,
         ]);
@@ -115,12 +111,12 @@ class StaffTransferTest extends TestCase
     {
         return StaffTransfer::create(array_merge([
             'staff_id' => $this->staff->id,
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'effective_date' => now()->addWeek(),
             'reason' => 'Test transfer',
             'status' => StaffTransferStatus::PENDING,
-            'requested_by' => $this->staff->id,
+            'requested_by_id' => $this->hrStaff->id,
             'requested_at' => now(),
         ], $attributes));
     }
@@ -129,21 +125,27 @@ class StaffTransferTest extends TestCase
     {
         $transfer = StaffTransfer::create([
             'staff_id' => $this->staff->id,
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
-            'current_department_id' => $this->sourceDepartment->id,
-            'new_department_id' => $this->targetDepartment->id,
-            'current_supervisor_id' => $this->supervisor->id,
-            'new_supervisor_id' => $this->newSupervisor->id,
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
+            'from_department_id' => $this->sourceDepartment->id,
+            'to_department_id' => $this->targetDepartment->id,
+            'from_supervisor_id' => $this->supervisor->id,
+            'to_supervisor_id' => $this->newSupervisor->id,
             'effective_date' => now(),
+            'is_immediate' => true,
             'reason' => 'Immediate transfer for project requirements',
             'status' => StaffTransferStatus::PENDING,
+            'requested_by_id' => $this->hrStaff->id,
+            'requested_at' => now(),
         ]);
 
+        // Immediate transfer is auto-processed by observer
+        $transfer->refresh();
+        
         $this->assertInstanceOf(StaffTransfer::class, $transfer);
-        $this->assertEquals(StaffTransferStatus::PENDING, $transfer->status);
+        $this->assertEquals(StaffTransferStatus::COMPLETED, $transfer->status);
         $this->assertEquals($this->staff->id, $transfer->staff_id);
-        $this->assertEquals($this->targetOffice->id, $transfer->new_office_id);
+        $this->assertEquals($this->targetOffice->id, $transfer->to_office_id);
         $this->assertTrue($transfer->effective_date->isToday());
     }
 
@@ -153,11 +155,13 @@ class StaffTransferTest extends TestCase
 
         $transfer = StaffTransfer::create([
             'staff_id' => $this->staff->id,
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'effective_date' => $futureDate,
             'reason' => 'Scheduled transfer for next month',
             'status' => StaffTransferStatus::PENDING,
+            'requested_by_id' => $this->hrStaff->id,
+            'requested_at' => now(),
         ]);
 
         $this->assertEquals($futureDate->format('Y-m-d'), $transfer->effective_date->format('Y-m-d'));
@@ -173,7 +177,7 @@ class StaffTransferTest extends TestCase
         $transfer->approve($this->hrStaff, 'HR Department approval');
 
         $this->assertEquals(StaffTransferStatus::APPROVED, $transfer->fresh()->status);
-        $this->assertEquals($this->hrStaff->id, $transfer->fresh()->approved_by);
+        $this->assertEquals($this->hrStaff->id, $transfer->fresh()->approved_by_id);
         $this->assertNotNull($transfer->fresh()->approved_at);
     }
 
@@ -193,40 +197,40 @@ class StaffTransferTest extends TestCase
     public function test_it_can_cancel_transfer_request(): void
     {
         $transfer = StaffTransfer::factory()->for($this->staff)->create([
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'status' => StaffTransferStatus::PENDING,
         ]);
 
-        $result = $transfer->cancel('Employee request');
+        $transfer->cancel($this->hrStaff, 'Employee request');
 
-        $this->assertTrue($result);
         $this->assertEquals(StaffTransferStatus::CANCELLED, $transfer->fresh()->status);
-        $this->assertEquals('Employee request', $transfer->fresh()->cancellation_reason);
         $this->assertNotNull($transfer->fresh()->cancelled_at);
+        $this->assertStringContainsString('Employee request', $transfer->fresh()->notes ?? '');
     }
 
     public function test_it_processes_immediate_transfer_automatically_when_approved(): void
     {
         $transfer = StaffTransfer::factory()->for($this->staff)->create([
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
-            'current_department_id' => $this->sourceDepartment->id,
-            'new_department_id' => $this->targetDepartment->id,
-            'current_supervisor_id' => $this->supervisor->id,
-            'new_supervisor_id' => $this->newSupervisor->id,
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
+            'from_department_id' => $this->sourceDepartment->id,
+            'to_department_id' => $this->targetDepartment->id,
+            'from_supervisor_id' => $this->supervisor->id,
+            'to_supervisor_id' => $this->newSupervisor->id,
             'effective_date' => now(),
+            'is_immediate' => true,
             'status' => StaffTransferStatus::PENDING,
+            'requested_by_id' => $this->hrStaff->id,
         ]);
 
-        $transfer->approve('Immediate processing required');
-
-        // Refresh models to see changes
+        // Refresh models to see changes (observer auto-approved and processed it)
         $this->staff->refresh();
         $transfer->refresh();
 
-        // Check if transfer was completed automatically
+        // Check if transfer was approved and completed automatically
         $this->assertEquals(StaffTransferStatus::COMPLETED, $transfer->status);
+        $this->assertNotNull($transfer->approved_at);
         $this->assertNotNull($transfer->completed_at);
 
         // Check if staff record was updated
@@ -240,13 +244,14 @@ class StaffTransferTest extends TestCase
         $futureDate = now()->addMonth();
 
         $transfer = StaffTransfer::factory()->for($this->staff)->create([
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'effective_date' => $futureDate,
+            'is_immediate' => false,
             'status' => StaffTransferStatus::PENDING,
         ]);
 
-        $transfer->approve('Scheduled for next month');
+        $transfer->approve($this->hrStaff, 'Scheduled for next month');
 
         // Refresh models
         $this->staff->refresh();
@@ -267,11 +272,14 @@ class StaffTransferTest extends TestCase
 
         StaffTransfer::create([
             'staff_id' => $this->staff->id,
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->sourceOffice->id, // Same office
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->sourceOffice->id, // Same office
             'effective_date' => now(),
+            'is_immediate' => true,
             'reason' => 'Invalid transfer',
             'status' => StaffTransferStatus::PENDING,
+            'requested_by_id' => $this->hrStaff->id,
+            'requested_at' => now(),
         ]);
     }
 
@@ -279,44 +287,50 @@ class StaffTransferTest extends TestCase
     {
         // Create first transfer
         StaffTransfer::factory()->for($this->staff)->create([
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'status' => StaffTransferStatus::PENDING,
         ]);
 
         $this->expectException(InvalidTransferException::class);
-        $this->expectExceptionMessage('Staff already has a pending transfer request');
+        $this->expectExceptionMessage('Staff already has a pending or approved transfer');
 
         // Try to create second transfer
         StaffTransfer::create([
             'staff_id' => $this->staff->id,
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'effective_date' => now(),
+            'is_immediate' => true,
             'reason' => 'Duplicate transfer',
             'status' => StaffTransferStatus::PENDING,
+            'requested_by_id' => $this->hrStaff->id,
+            'requested_at' => now(),
         ]);
     }
 
     public function test_it_validates_against_circular_supervisor_reference(): void
     {
         // Create a subordinate
-        $subordinate = Staff::factory()->for($this->company)->for($this->sourceOffice)->create([
+        $subordinate = Staff::factory()->for($this->sourceOffice)->create([
             'supervisor_id' => $this->staff->id,
         ]);
 
         $this->expectException(InvalidTransferException::class);
-        $this->expectExceptionMessage('Cannot set supervisor: would create circular reference');
+        $this->expectExceptionMessage('Cannot assign supervisor who reports to this staff member');
 
         StaffTransfer::create([
             'staff_id' => $this->staff->id,
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
-            'current_supervisor_id' => $this->supervisor->id,
-            'new_supervisor_id' => $subordinate->id, // Circular reference
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
+            'from_supervisor_id' => $this->supervisor->id,
+            'to_supervisor_id' => $subordinate->id, // Circular reference
             'effective_date' => now(),
+            'is_immediate' => true,
             'reason' => 'Invalid supervisor assignment',
             'status' => StaffTransferStatus::PENDING,
+            'requested_by_id' => $this->hrStaff->id,
+            'requested_at' => now(),
         ]);
     }
 
@@ -324,18 +338,23 @@ class StaffTransferTest extends TestCase
     {
         $transfer = StaffTransfer::create([
             'staff_id' => $this->staff->id,
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
-            'current_supervisor_id' => $this->supervisor->id,
-            'new_supervisor_id' => $this->supervisor->id, // Same supervisor
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
+            'from_supervisor_id' => $this->supervisor->id,
+            'to_supervisor_id' => $this->supervisor->id, // Same supervisor
             'effective_date' => now(),
+            'is_immediate' => true,
             'reason' => 'Office change only',
             'status' => StaffTransferStatus::PENDING,
+            'requested_by_id' => $this->hrStaff->id,
+            'requested_at' => now(),
         ]);
 
-        $transfer->approve('Approved');
-
+        // Immediate transfer is auto-approved and processed by observer
         $this->staff->refresh();
+        $transfer->refresh();
+        
+        $this->assertEquals(StaffTransferStatus::COMPLETED, $transfer->status);
         $this->assertEquals($this->targetOffice->id, $this->staff->office_id);
         $this->assertEquals($this->supervisor->id, $this->staff->supervisor_id);
     }
@@ -344,62 +363,102 @@ class StaffTransferTest extends TestCase
     {
         $transfer = StaffTransfer::create([
             'staff_id' => $this->staff->id,
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
-            'current_supervisor_id' => $this->supervisor->id,
-            'new_supervisor_id' => null, // Remove supervisor
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
+            'from_supervisor_id' => $this->supervisor->id,
+            'to_supervisor_id' => null, // Remove supervisor
             'effective_date' => now(),
+            'is_immediate' => true,
             'reason' => 'Promote to manager',
             'status' => StaffTransferStatus::PENDING,
+            'requested_by_id' => $this->hrStaff->id,
+            'requested_at' => now(),
         ]);
 
-        $transfer->approve('Promotion approved');
-
+        // Immediate transfer is auto-approved and processed by observer
         $this->staff->refresh();
+        $transfer->refresh();
+        
+        $this->assertEquals(StaffTransferStatus::COMPLETED, $transfer->status);
         $this->assertEquals($this->targetOffice->id, $this->staff->office_id);
         $this->assertNull($this->staff->supervisor_id);
     }
 
     public function test_it_can_only_transfer_office_without_department_change(): void
     {
+        // Verify initial state
+        $this->assertNotNull($this->staff->department_id, 'Staff should have a department initially');
+        $initialDepartmentId = $this->staff->department_id;
+        
         $transfer = StaffTransfer::create([
             'staff_id' => $this->staff->id,
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
-            // No department change specified
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
+            // No department change specified - from_department_id and to_department_id are null
+            'from_department_id' => null,
+            'to_department_id' => null,
             'effective_date' => now(),
+            'is_immediate' => true,
             'reason' => 'Office relocation',
             'status' => StaffTransferStatus::PENDING,
+            'requested_by_id' => $this->hrStaff->id,
+            'requested_at' => now(),
         ]);
 
-        $transfer->approve('Approved');
-
+        // Immediate transfer is auto-approved and processed by observer
         $this->staff->refresh();
+        $transfer->refresh();
+        
+        $this->assertEquals(StaffTransferStatus::COMPLETED, $transfer->status);
         $this->assertEquals($this->targetOffice->id, $this->staff->office_id);
-        $this->assertEquals($this->sourceDepartment->id, $this->staff->department_id); // Unchanged
+        $this->assertEquals($initialDepartmentId, $this->staff->department_id, 'Department should remain unchanged when not specified in transfer');
     }
 
     public function test_it_tracks_transfer_history_correctly(): void
     {
-        // Create multiple transfers
-        $transfer1 = StaffTransfer::factory()->for($this->staff)->create([
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
-            'status' => StaffTransferStatus::COMPLETED,
-            'completed_at' => now()->subMonth(),
-        ]);
+        // Ensure no transfers exist initially
+        $initialCount = $this->staff->transfers()->count();
+        $this->assertEquals(0, $initialCount, 'Staff should have no transfers initially');
+        
+        // Create multiple transfers with explicit created_at timestamps
+        $transfer1 = StaffTransfer::factory()
+            ->for($this->staff)
+            ->immediate()
+            ->completed()
+            ->create([
+                'from_office_id' => $this->sourceOffice->id,
+                'to_office_id' => $this->targetOffice->id,
+                'completed_at' => now()->subMonth(),
+                'created_at' => now()->subDay(),
+            ]);
 
-        $transfer2 = StaffTransfer::factory()->for($this->staff)->create([
-            'current_office_id' => $this->targetOffice->id,
-            'new_office_id' => $this->sourceOffice->id,
-            'status' => StaffTransferStatus::PENDING,
-        ]);
+        $transfer2 = StaffTransfer::factory()
+            ->for($this->staff)
+            ->immediate()
+            ->pending()
+            ->create([
+                'from_office_id' => $this->targetOffice->id,
+                'to_office_id' => $this->sourceOffice->id,
+                'created_at' => now(),
+            ]);
 
-        $transfers = $this->staff->transfers()->orderBy('created_at')->get();
+        $transfers = $this->staff->fresh()->transfers()->orderBy('created_at')->get();
 
-        $this->assertCount(2, $transfers);
-        $this->assertEquals($transfer1->id, $transfers->first()->id);
-        $this->assertEquals($transfer2->id, $transfers->last()->id);
+        $this->assertCount(2, $transfers, sprintf(
+            'Should have exactly 2 transfers, found %d. Transfer IDs: %s',
+            $transfers->count(),
+            $transfers->pluck('id')->implode(', ')
+        ));
+        $this->assertEquals(
+            $transfer1->id,
+            $transfers->first()->id,
+            sprintf('Expected first transfer ID to be %d but got %d', $transfer1->id, $transfers->first()->id)
+        );
+        $this->assertEquals(
+            $transfer2->id,
+            $transfers->last()->id,
+            sprintf('Expected last transfer ID to be %d but got %d', $transfer2->id, $transfers->last()->id)
+        );
     }
 
     public function test_it_can_check_if_staff_has_active_transfer(): void
@@ -408,22 +467,27 @@ class StaffTransferTest extends TestCase
         $this->assertFalse($this->staff->hasActiveTransfer());
 
         // Create pending transfer
-        StaffTransfer::factory()->for($this->staff)->create([
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
+        $transfer = StaffTransfer::factory()->for($this->staff)->create([
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'status' => StaffTransferStatus::PENDING,
+            'is_immediate' => false,
         ]);
 
         $this->assertTrue($this->staff->hasActiveTransfer());
 
-        // Create approved transfer
-        StaffTransfer::factory()->for($this->staff)->create([
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
-            'status' => StaffTransferStatus::APPROVED,
-        ]);
+        // Change to approved status
+        $transfer->update(['status' => StaffTransferStatus::APPROVED]);
+        $this->staff->refresh();
 
         $this->assertTrue($this->staff->hasActiveTransfer());
+        
+        // Complete the transfer
+        $transfer->update(['status' => StaffTransferStatus::COMPLETED]);
+        $this->staff->refresh();
+        
+        // No longer has active transfer
+        $this->assertFalse($this->staff->hasActiveTransfer());
     }
 
     public function test_it_can_check_if_staff_can_be_transferred(): void
@@ -446,19 +510,36 @@ class StaffTransferTest extends TestCase
 
     public function test_it_provides_transfer_scopes(): void
     {
-        $pending = StaffTransfer::factory()->for($this->staff)->create([
+        $staff1 = Staff::factory()->for($this->sourceOffice)->create();
+        $staff2 = Staff::factory()->for($this->sourceOffice)->create();
+        $staff3 = Staff::factory()->for($this->sourceOffice)->create();
+        $staff4 = Staff::factory()->for($this->sourceOffice)->create();
+
+        $pending = StaffTransfer::factory()->for($staff1)->create([
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'status' => StaffTransferStatus::PENDING,
+            'is_immediate' => false,
         ]);
 
-        $approved = StaffTransfer::factory()->for($this->staff)->create([
+        $approved = StaffTransfer::factory()->for($staff2)->create([
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'status' => StaffTransferStatus::APPROVED,
+            'is_immediate' => false,
+            'effective_date' => now()->addWeek(),
         ]);
 
-        $completed = StaffTransfer::factory()->for($this->staff)->create([
+        $completed = StaffTransfer::factory()->for($staff3)->create([
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'status' => StaffTransferStatus::COMPLETED,
+            'completed_at' => now(),
         ]);
 
-        $rejected = StaffTransfer::factory()->for($this->staff)->create([
+        $rejected = StaffTransfer::factory()->for($staff4)->create([
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'status' => StaffTransferStatus::REJECTED,
         ]);
 
@@ -472,19 +553,24 @@ class StaffTransferTest extends TestCase
         $this->assertCount(1, $approvedTransfers);
         $this->assertEquals($approved->id, $approvedTransfers->first()->id);
 
-        // Test active scope (pending + approved)
-        $activeTransfers = StaffTransfer::active()->get();
-        $this->assertCount(2, $activeTransfers);
+        // Test completed scope
+        $completedTransfers = StaffTransfer::completed()->get();
+        $this->assertCount(1, $completedTransfers);
+        $this->assertEquals($completed->id, $completedTransfers->first()->id);
 
-        // Test due scope (approved transfers due for processing)
-        $dueTransfers = StaffTransfer::due()->get();
-        $this->assertCount(1, $dueTransfers);
-        $this->assertEquals($approved->id, $dueTransfers->first()->id);
+        // Test rejected scope
+        $rejectedTransfers = StaffTransfer::rejected()->get();
+        $this->assertCount(1, $rejectedTransfers);
+        $this->assertEquals($rejected->id, $rejectedTransfers->first()->id);
+
+        // Test dueForProcessing scope (no transfers should be due since approved one is future-dated)
+        $dueTransfers = StaffTransfer::dueForProcessing()->get();
+        $this->assertCount(0, $dueTransfers);
     }
 
     public function test_it_handles_transfer_request_helper_method(): void
     {
-        $requestedBy = Staff::factory()->for($this->company)->for($this->sourceOffice)->create();
+        $requestedBy = Staff::factory()->for($this->sourceOffice)->create();
 
         $transferData = $this->staff->requestTransfer(
             toOffice: $this->targetOffice,
@@ -497,9 +583,9 @@ class StaffTransferTest extends TestCase
 
         $this->assertInstanceOf(StaffTransfer::class, $transferData);
         $this->assertEquals($this->staff->id, $transferData->staff_id);
-        $this->assertEquals($this->targetOffice->id, $transferData->new_office_id);
-        $this->assertEquals($this->targetDepartment->id, $transferData->new_department_id);
-        $this->assertEquals($this->newSupervisor->id, $transferData->new_supervisor_id);
+        $this->assertEquals($this->targetOffice->id, $transferData->to_office_id);
+        $this->assertEquals($this->targetDepartment->id, $transferData->to_department_id);
+        $this->assertEquals($this->newSupervisor->id, $transferData->to_supervisor_id);
         $this->assertEquals('Career development opportunity', $transferData->reason);
         $this->assertEquals(StaffTransferStatus::PENDING, $transferData->status);
     }
@@ -510,25 +596,28 @@ class StaffTransferTest extends TestCase
 
         StaffTransfer::create([
             'staff_id' => $this->staff->id,
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'effective_date' => now()->subDay(), // Past date
             'reason' => 'Invalid date',
             'status' => StaffTransferStatus::PENDING,
+            'requested_by_id' => $this->hrStaff->id,
+            'requested_at' => now(),
         ]);
     }
 
     public function test_it_cannot_modify_final_status_transfers(): void
     {
         $transfer = StaffTransfer::factory()->for($this->staff)->create([
-            'current_office_id' => $this->sourceOffice->id,
-            'new_office_id' => $this->targetOffice->id,
+            'from_office_id' => $this->sourceOffice->id,
+            'to_office_id' => $this->targetOffice->id,
             'status' => StaffTransferStatus::COMPLETED,
         ]);
 
-        $this->assertFalse($transfer->canBeModified());
-        $this->assertFalse($transfer->approve('Should not work'));
-        $this->assertFalse($transfer->reject('Should not work'));
-        $this->assertFalse($transfer->cancel('Should not work'));
+        $this->assertFalse($transfer->status->canBeModified());
+        $this->assertTrue($transfer->status->isFinal());
+        $this->assertFalse($transfer->canBeApproved());
+        $this->assertFalse($transfer->canBeRejected());
+        $this->assertFalse($transfer->canBeCancelled());
     }
 }

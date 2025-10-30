@@ -30,7 +30,7 @@ class DepartmentTest extends TestCase
         $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
@@ -38,50 +38,37 @@ class DepartmentTest extends TestCase
             'name' => 'IT Department',
             'code' => 'IT',
             'description' => 'Information Technology Department',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'is_active' => true,
         ]);
 
         $this->assertDatabaseHas('backoffice_departments', [
             'name' => 'IT Department',
             'code' => 'IT',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'is_active' => true,
         ]);
 
         $this->assertEquals('IT Department', $department->name);
-        $this->assertEquals($office->id, $department->office_id);
+        $this->assertEquals($company->id, $department->company_id);
     }
 
     /** @test */
-    public function it_belongs_to_office()
+    public function it_belongs_to_company()
     {
         $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::factory()->create([
-            'name' => 'Branch',
-            'code' => 'BRANCH',
-            'is_active' => true,
-        ]);
-
-        $office = Office::factory()->create([
-            'name' => 'Test Office',
-            'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
-            'is_active' => true,
-        ]);
-
         $department = Department::factory()->create([
             'name' => 'HR Department',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'is_active' => true,
         ]);
 
-        $this->assertEquals($office->id, $department->office->id);
-        $this->assertEquals('Test Office', $department->office->name);
+        $this->assertEquals($company->id, $department->company->id);
+        $this->assertEquals('Test Company', $department->company->name);
     }
 
     /** @test */
@@ -101,21 +88,21 @@ class DepartmentTest extends TestCase
         $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
         $parentDepartment = Department::factory()->create([
             'name' => 'Technology',
             'code' => 'TECH',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'is_active' => true,
         ]);
 
         $childDepartment = Department::factory()->create([
             'name' => 'Software Development',
             'code' => 'SOFTDEV',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'parent_department_id' => $parentDepartment->id,
             'is_active' => true,
         ]);
@@ -142,33 +129,33 @@ class DepartmentTest extends TestCase
         $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
         $rootDepartment = Department::factory()->create([
             'name' => 'Technology',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'is_active' => true,
         ]);
 
         $child1 = Department::factory()->create([
             'name' => 'Software Development',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'parent_department_id' => $rootDepartment->id,
             'is_active' => true,
         ]);
 
         $child2 = Department::factory()->create([
             'name' => 'Quality Assurance',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'parent_department_id' => $rootDepartment->id,
             'is_active' => true,
         ]);
 
         $grandchild = Department::factory()->create([
             'name' => 'Frontend Development',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'parent_department_id' => $child1->id,
             'is_active' => true,
         ]);
@@ -182,50 +169,35 @@ class DepartmentTest extends TestCase
     }
 
     /** @test */
-    public function it_can_scope_by_office()
+    public function it_can_scope_by_company()
     {
-        $company = Company::factory()->create([
-            'name' => 'Test Company',
+        $company1 = Company::factory()->create([
+            'name' => 'Company 1',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::factory()->create([
-            'name' => 'Branch',
-            'code' => 'BRANCH',
-            'is_active' => true,
-        ]);
-
-        $office1 = Office::factory()->create([
-            'name' => 'Office 1',
-            'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
-            'is_active' => true,
-        ]);
-
-        $office2 = Office::factory()->create([
-            'name' => 'Office 2',
-            'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+        $company2 = Company::factory()->create([
+            'name' => 'Company 2',
             'is_active' => true,
         ]);
 
         $dept1 = Department::factory()->create([
             'name' => 'IT Department',
-            'office_id' => $office1->id,
+            'company_id' => $company1->id,
             'is_active' => true,
         ]);
 
         $dept2 = Department::factory()->create([
             'name' => 'HR Department',
-            'office_id' => $office2->id,
+            'company_id' => $company2->id,
             'is_active' => true,
         ]);
 
-        $office1Departments = Department::byOffice($office1->id)->get();
+        $company1Departments = Department::forCompany($company1->id)->get();
         
-        $this->assertCount(1, $office1Departments);
-        $this->assertTrue($office1Departments->contains('id', $dept1->id));
-        $this->assertFalse($office1Departments->contains('id', $dept2->id));
+        $this->assertCount(1, $company1Departments);
+        $this->assertTrue($company1Departments->contains('id', $dept1->id));
+        $this->assertFalse($company1Departments->contains('id', $dept2->id));
     }
 
     /** @test */
@@ -245,19 +217,19 @@ class DepartmentTest extends TestCase
         $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
         $activeDepartment = Department::factory()->create([
             'name' => 'Active Department',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'is_active' => true,
         ]);
 
         $inactiveDepartment = Department::factory()->create([
             'name' => 'Inactive Department',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
             'is_active' => false,
         ]);
 
@@ -269,11 +241,13 @@ class DepartmentTest extends TestCase
     }
 
     /** @test */
-    public function it_requires_name_and_office()
+    public function it_requires_name_and_company()
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
         
         Department::factory()->create([
+            'name' => null,
+            'company_id' => null,
             'code' => 'TEST',
             'is_active' => true,
         ]);
@@ -296,13 +270,13 @@ class DepartmentTest extends TestCase
         $office = Office::factory()->create([
             'name' => 'Test Office',
             'company_id' => $company->id,
-            'office_type_id' => $officeType->id,
+            
             'is_active' => true,
         ]);
 
         $department = Department::factory()->create([
             'name' => 'Test Department',
-            'office_id' => $office->id,
+            'company_id' => $company->id,
         ]);
 
         $this->assertTrue($department->is_active);

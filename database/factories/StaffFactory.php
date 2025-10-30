@@ -80,7 +80,7 @@ class StaffFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => StaffStatus::ACTIVE,
-            'resignation_date' => $this->faker->dateTimeBetween('now', '+2 months'),
+            'resignation_date' => $this->faker->dateTimeBetween('+1 day', '+2 months'),
             'resignation_reason' => $reason ?? $this->faker->sentence(),
             'resigned_at' => null,
             'is_active' => true,

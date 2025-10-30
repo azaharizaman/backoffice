@@ -189,27 +189,34 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_get_hierarchy_path()
     {
-        $rootCompany = Company::factory()->root()->create([
+        $rootCompany = Company::factory()->create([
             'name' => 'Root Company',
             'code' => 'ROOT',
+            'parent_company_id' => null,
         ]);
 
-        $level1Company = Company::factory()->childOf($rootCompany)->create([
+        $level1Company = Company::factory()->create([
             'name' => 'Level 1 Company',
             'code' => 'L1',
+            'parent_company_id' => $rootCompany->id,
         ]);
 
-        $level2Company = Company::factory()->childOf($level1Company)->create([
+        $level2Company = Company::factory()->create([
             'name' => 'Level 2 Company',
             'code' => 'L2',
+            'parent_company_id' => $level1Company->id,
         ]);
 
-        $path = $level2Company->getPath();
+        $path = $level2Company->fresh()->getPath();
         
-        $this->assertCount(3, $path);
-        $this->assertEquals($rootCompany->id, $path[0]->id);
-        $this->assertEquals($level1Company->id, $path[1]->id);
-        $this->assertEquals($level2Company->id, $path[2]->id);
+        $this->assertCount(3, $path, 'Path should contain root, level1, and level2 companies');
+        $this->assertTrue($path->contains('name', 'Root Company'), 'Path should contain root company');
+        $this->assertTrue($path->contains('name', 'Level 1 Company'), 'Path should contain level 1 company');
+        $this->assertTrue($path->contains('name', 'Level 2 Company'), 'Path should contain level 2 company');
+        
+        // Verify order: root should be first, level2 should be last
+        $this->assertEquals('Root Company', $path->first()->name, 'Root company should be first in path');
+        $this->assertEquals('Level 2 Company', $path->last()->name, 'Level 2 company should be last in path');
     }
 
     /** @test */
@@ -294,7 +301,8 @@ class CompanyTest extends TestCase
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
         
-        Company::factory()->create([
+        Company::create([
+            'name' => null,
             'code' => 'TEST',
             'is_active' => true,
         ]);

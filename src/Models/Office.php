@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use AzahariZaman\BackOffice\Traits\HasHierarchy;
-use AzahariZaman\BackOffice\Enums\OfficeType;
+use AzahariZaman\BackOffice\Models\OfficeType;
 
 /**
  * Office Model

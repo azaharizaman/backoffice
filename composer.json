@@ -34,7 +34,8 @@
     },
     "autoload": {
         "psr-4": {
-            "AzahariZaman\\BackOffice\\": "src/"
+            "AzahariZaman\\BackOffice\\": "src/",
+            "AzahariZaman\\BackOffice\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {

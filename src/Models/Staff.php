@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use AzahariZaman\BackOffice\Enums\StaffStatus;
@@ -11,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Carbon\Carbon;
 
 /**
  * Staff Model
@@ -338,7 +338,7 @@ class Staff extends Model
             return null;
         }
 
-        return now()->diffInDays($this->resignation_date, false);
+        return (int) now()->startOfDay()->diffInDays($this->resignation_date->startOfDay(), false);
     }
 
     // ==========================================
