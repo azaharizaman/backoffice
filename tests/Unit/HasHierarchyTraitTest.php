@@ -13,12 +13,12 @@ class HasHierarchyTraitTest extends TestCase
     /** @test */
     public function it_can_identify_root_nodes()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->create([
             'name' => 'Root Company',
             'is_active' => true,
         ]);
 
-        $childCompany = Company::create([
+        $childCompany = Company::factory()->create([
             'name' => 'Child Company',
             'parent_company_id' => $rootCompany->id,
             'is_active' => true,
@@ -31,12 +31,12 @@ class HasHierarchyTraitTest extends TestCase
     /** @test */
     public function it_can_identify_leaf_nodes()
     {
-        $parentCompany = Company::create([
+        $parentCompany = Company::factory()->create([
             'name' => 'Parent Company',
             'is_active' => true,
         ]);
 
-        $childCompany = Company::create([
+        $childCompany = Company::factory()->create([
             'name' => 'Child Company',
             'parent_company_id' => $parentCompany->id,
             'is_active' => true,
@@ -49,18 +49,18 @@ class HasHierarchyTraitTest extends TestCase
     /** @test */
     public function it_can_calculate_depth()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->create([
             'name' => 'Root Company',
             'is_active' => true,
         ]);
 
-        $level1Company = Company::create([
+        $level1Company = Company::factory()->create([
             'name' => 'Level 1 Company',
             'parent_company_id' => $rootCompany->id,
             'is_active' => true,
         ]);
 
-        $level2Company = Company::create([
+        $level2Company = Company::factory()->create([
             'name' => 'Level 2 Company',
             'parent_company_id' => $level1Company->id,
             'is_active' => true,
@@ -74,18 +74,18 @@ class HasHierarchyTraitTest extends TestCase
     /** @test */
     public function it_can_get_hierarchy_path()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->create([
             'name' => 'Root Company',
             'is_active' => true,
         ]);
 
-        $level1Company = Company::create([
+        $level1Company = Company::factory()->create([
             'name' => 'Level 1 Company',
             'parent_company_id' => $rootCompany->id,
             'is_active' => true,
         ]);
 
-        $level2Company = Company::create([
+        $level2Company = Company::factory()->create([
             'name' => 'Level 2 Company',
             'parent_company_id' => $level1Company->id,
             'is_active' => true,
@@ -102,18 +102,18 @@ class HasHierarchyTraitTest extends TestCase
     /** @test */
     public function it_can_check_ancestor_descendant_relationships()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->create([
             'name' => 'Root Company',
             'is_active' => true,
         ]);
 
-        $level1Company = Company::create([
+        $level1Company = Company::factory()->create([
             'name' => 'Level 1 Company',
             'parent_company_id' => $rootCompany->id,
             'is_active' => true,
         ]);
 
-        $level2Company = Company::create([
+        $level2Company = Company::factory()->create([
             'name' => 'Level 2 Company',
             'parent_company_id' => $level1Company->id,
             'is_active' => true,
@@ -135,24 +135,24 @@ class HasHierarchyTraitTest extends TestCase
     /** @test */
     public function it_can_get_all_descendants()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->create([
             'name' => 'Root Company',
             'is_active' => true,
         ]);
 
-        $child1 = Company::create([
+        $child1 = Company::factory()->create([
             'name' => 'Child 1',
             'parent_company_id' => $rootCompany->id,
             'is_active' => true,
         ]);
 
-        $child2 = Company::create([
+        $child2 = Company::factory()->create([
             'name' => 'Child 2',
             'parent_company_id' => $rootCompany->id,
             'is_active' => true,
         ]);
 
-        $grandchild = Company::create([
+        $grandchild = Company::factory()->create([
             'name' => 'Grandchild',
             'parent_company_id' => $child1->id,
             'is_active' => true,
@@ -169,18 +169,18 @@ class HasHierarchyTraitTest extends TestCase
     /** @test */
     public function it_can_get_all_ancestors()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->create([
             'name' => 'Root Company',
             'is_active' => true,
         ]);
 
-        $level1Company = Company::create([
+        $level1Company = Company::factory()->create([
             'name' => 'Level 1 Company',
             'parent_company_id' => $rootCompany->id,
             'is_active' => true,
         ]);
 
-        $level2Company = Company::create([
+        $level2Company = Company::factory()->create([
             'name' => 'Level 2 Company',
             'parent_company_id' => $level1Company->id,
             'is_active' => true,
@@ -196,24 +196,24 @@ class HasHierarchyTraitTest extends TestCase
     /** @test */
     public function it_can_get_siblings()
     {
-        $parentCompany = Company::create([
+        $parentCompany = Company::factory()->create([
             'name' => 'Parent Company',
             'is_active' => true,
         ]);
 
-        $child1 = Company::create([
+        $child1 = Company::factory()->create([
             'name' => 'Child 1',
             'parent_company_id' => $parentCompany->id,
             'is_active' => true,
         ]);
 
-        $child2 = Company::create([
+        $child2 = Company::factory()->create([
             'name' => 'Child 2',
             'parent_company_id' => $parentCompany->id,
             'is_active' => true,
         ]);
 
-        $child3 = Company::create([
+        $child3 = Company::factory()->create([
             'name' => 'Child 3',
             'parent_company_id' => $parentCompany->id,
             'is_active' => true,
@@ -230,18 +230,18 @@ class HasHierarchyTraitTest extends TestCase
     /** @test */
     public function it_can_get_root_node()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->create([
             'name' => 'Root Company',
             'is_active' => true,
         ]);
 
-        $level1Company = Company::create([
+        $level1Company = Company::factory()->create([
             'name' => 'Level 1 Company',
             'parent_company_id' => $rootCompany->id,
             'is_active' => true,
         ]);
 
-        $level2Company = Company::create([
+        $level2Company = Company::factory()->create([
             'name' => 'Level 2 Company',
             'parent_company_id' => $level1Company->id,
             'is_active' => true,

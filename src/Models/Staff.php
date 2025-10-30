@@ -748,4 +748,12 @@ class Staff extends Model
             ->where('completed_at', '>=', now()->subDays($days))
             ->exists();
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \AzahariZaman\BackOffice\Database\Factories\StaffFactory
+    {
+        return \AzahariZaman\BackOffice\Database\Factories\StaffFactory::new();
+    }
 }

@@ -186,4 +186,12 @@ class Company extends Model
     {
         return $this->getAllStaff()->filter(fn (Staff $s) => $s->isTopLevel())->values();
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \AzahariZaman\BackOffice\Database\Factories\CompanyFactory
+    {
+        return \AzahariZaman\BackOffice\Database\Factories\CompanyFactory::new();
+    }
 }

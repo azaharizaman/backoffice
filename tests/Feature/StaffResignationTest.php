@@ -19,25 +19,25 @@ class StaffResignationTest extends TestCase
 
     protected function createTestStructure()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Headquarters',
             'code' => 'HQ',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $department = Department::create([
+        $department = Department::factory()->create([
             'name' => 'IT Department',
             'code' => 'IT',
             'office_id' => $office->id,
@@ -52,7 +52,7 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $staff = Staff::create([
+        $staff = Staff::factory()->create([
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'employee_id' => 'EMP001',
@@ -82,7 +82,7 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $staff = Staff::create([
+        $staff = Staff::factory()->create([
             'name' => 'Jane Smith',
             'email' => 'jane@example.com',
             'employee_id' => 'EMP002',
@@ -107,7 +107,7 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $staff = Staff::create([
+        $staff = Staff::factory()->create([
             'name' => 'Bob Wilson',
             'email' => 'bob@example.com',
             'employee_id' => 'EMP003',
@@ -134,7 +134,7 @@ class StaffResignationTest extends TestCase
         $structure = $this->createTestStructure();
 
         // Staff with resignation due yesterday
-        $staffPastDue = Staff::create([
+        $staffPastDue = Staff::factory()->create([
             'name' => 'Past Due Staff',
             'email' => 'pastdue@example.com',
             'employee_id' => 'EMP004',
@@ -145,7 +145,7 @@ class StaffResignationTest extends TestCase
         ]);
 
         // Staff with resignation due in future
-        $staffFuture = Staff::create([
+        $staffFuture = Staff::factory()->create([
             'name' => 'Future Staff',
             'email' => 'future@example.com',
             'employee_id' => 'EMP005',
@@ -164,7 +164,7 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $staff = Staff::create([
+        $staff = Staff::factory()->create([
             'name' => 'Future Resignation',
             'email' => 'future@example.com',
             'employee_id' => 'EMP006',
@@ -183,7 +183,7 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $activStaff = Staff::create([
+        $activStaff = Staff::factory()->create([
             'name' => 'Active Staff',
             'email' => 'active@example.com',
             'employee_id' => 'EMP007',
@@ -192,7 +192,7 @@ class StaffResignationTest extends TestCase
             'is_active' => true,
         ]);
 
-        $pendingResignationStaff = Staff::create([
+        $pendingResignationStaff = Staff::factory()->create([
             'name' => 'Pending Resignation',
             'email' => 'pending@example.com',
             'employee_id' => 'EMP008',
@@ -202,7 +202,7 @@ class StaffResignationTest extends TestCase
             'is_active' => true,
         ]);
 
-        $resignedStaff = Staff::create([
+        $resignedStaff = Staff::factory()->create([
             'name' => 'Already Resigned',
             'email' => 'resigned@example.com',
             'employee_id' => 'EMP009',
@@ -226,7 +226,7 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $activeStaff = Staff::create([
+        $activeStaff = Staff::factory()->create([
             'name' => 'Active Staff',
             'email' => 'active@example.com',
             'employee_id' => 'EMP010',
@@ -235,7 +235,7 @@ class StaffResignationTest extends TestCase
             'is_active' => true,
         ]);
 
-        $resignedStaff = Staff::create([
+        $resignedStaff = Staff::factory()->create([
             'name' => 'Resigned Staff',
             'email' => 'resigned@example.com',
             'employee_id' => 'EMP011',
@@ -260,7 +260,7 @@ class StaffResignationTest extends TestCase
         $this->expectException(InvalidResignationException::class);
         $this->expectExceptionMessage('Resignation date cannot be in the past for new staff entries.');
 
-        Staff::create([
+        Staff::factory()->create([
             'name' => 'Invalid Staff',
             'email' => 'invalid@example.com',
             'employee_id' => 'EMP012',
@@ -276,7 +276,7 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $staff = Staff::create([
+        $staff = Staff::factory()->create([
             'name' => 'Auto Resigned',
             'email' => 'auto@example.com',
             'employee_id' => 'EMP013',
@@ -298,7 +298,7 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $staff = Staff::create([
+        $staff = Staff::factory()->create([
             'name' => 'Reactivated Staff',
             'email' => 'reactivated@example.com',
             'employee_id' => 'EMP014',
@@ -325,7 +325,7 @@ class StaffResignationTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $activeStaff = Staff::create([
+        $activeStaff = Staff::factory()->create([
             'name' => 'Active Staff',
             'email' => 'active@example.com',
             'employee_id' => 'EMP015',
@@ -334,7 +334,7 @@ class StaffResignationTest extends TestCase
             'is_active' => true,
         ]);
 
-        $resignedStaff = Staff::create([
+        $resignedStaff = Staff::factory()->create([
             'name' => 'Resigned Staff',
             'email' => 'resigned@example.com',
             'employee_id' => 'EMP016',

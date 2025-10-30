@@ -17,25 +17,25 @@ class StaffTest extends TestCase
 
     protected function createTestStructure()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Headquarters',
             'code' => 'HQ',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $department = Department::create([
+        $department = Department::factory()->create([
             'name' => 'IT Department',
             'code' => 'IT',
             'office_id' => $office->id,
@@ -50,7 +50,7 @@ class StaffTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $staff = Staff::create([
+        $staff = Staff::factory()->create([
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'employee_id' => 'EMP001',
@@ -80,7 +80,7 @@ class StaffTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $staff = Staff::create([
+        $staff = Staff::factory()->create([
             'name' => 'Jane Smith',
             'email' => 'jane@example.com',
             'employee_id' => 'EMP002',
@@ -99,7 +99,7 @@ class StaffTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $supervisor = Staff::create([
+        $supervisor = Staff::factory()->create([
             'name' => 'Senior Manager',
             'email' => 'manager@example.com',
             'employee_id' => 'MGR001',
@@ -109,7 +109,7 @@ class StaffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $subordinate = Staff::create([
+        $subordinate = Staff::factory()->create([
             'name' => 'Junior Developer',
             'email' => 'junior@example.com',
             'employee_id' => 'JUN001',
@@ -130,7 +130,7 @@ class StaffTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $activeStaff = Staff::create([
+        $activeStaff = Staff::factory()->create([
             'name' => 'Active Employee',
             'email' => 'active@example.com',
             'employee_id' => 'ACT001',
@@ -139,7 +139,7 @@ class StaffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $terminatedStaff = Staff::create([
+        $terminatedStaff = Staff::factory()->create([
             'name' => 'Terminated Employee',
             'email' => 'terminated@example.com',
             'employee_id' => 'TER001',
@@ -163,14 +163,14 @@ class StaffTest extends TestCase
         $structure = $this->createTestStructure();
 
         // Create second department
-        $hrDepartment = Department::create([
+        $hrDepartment = Department::factory()->create([
             'name' => 'HR Department',
             'code' => 'HR',
             'office_id' => $structure['office']->id,
             'is_active' => true,
         ]);
 
-        $itStaff = Staff::create([
+        $itStaff = Staff::factory()->create([
             'name' => 'IT Staff',
             'email' => 'it@example.com',
             'employee_id' => 'IT001',
@@ -179,7 +179,7 @@ class StaffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $hrStaff = Staff::create([
+        $hrStaff = Staff::factory()->create([
             'name' => 'HR Staff',
             'email' => 'hr@example.com',
             'employee_id' => 'HR001',
@@ -200,7 +200,7 @@ class StaffTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $activeStaff = Staff::create([
+        $activeStaff = Staff::factory()->create([
             'name' => 'Active Staff',
             'email' => 'active@example.com',
             'employee_id' => 'ACT001',
@@ -209,7 +209,7 @@ class StaffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $inactiveStaff = Staff::create([
+        $inactiveStaff = Staff::factory()->create([
             'name' => 'Inactive Staff',
             'email' => 'inactive@example.com',
             'employee_id' => 'INA001',
@@ -230,7 +230,7 @@ class StaffTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $manager = Staff::create([
+        $manager = Staff::factory()->create([
             'name' => 'Department Manager',
             'email' => 'manager@example.com',
             'employee_id' => 'MGR001',
@@ -240,7 +240,7 @@ class StaffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $teamLead = Staff::create([
+        $teamLead = Staff::factory()->create([
             'name' => 'Team Lead',
             'email' => 'lead@example.com',
             'employee_id' => 'LEAD001',
@@ -251,7 +251,7 @@ class StaffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $developer = Staff::create([
+        $developer = Staff::factory()->create([
             'name' => 'Developer',
             'email' => 'dev@example.com',
             'employee_id' => 'DEV001',
@@ -279,7 +279,7 @@ class StaffTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        Staff::create([
+        Staff::factory()->create([
             'name' => 'First Employee',
             'email' => 'first@example.com',
             'employee_id' => 'EMP001',
@@ -290,7 +290,7 @@ class StaffTest extends TestCase
 
         $this->expectException(\Illuminate\Database\QueryException::class);
 
-        Staff::create([
+        Staff::factory()->create([
             'name' => 'Second Employee',
             'email' => 'second@example.com',
             'employee_id' => 'EMP001', // Same employee ID
@@ -305,7 +305,7 @@ class StaffTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        Staff::create([
+        Staff::factory()->create([
             'name' => 'First Employee',
             'email' => 'employee@example.com',
             'employee_id' => 'EMP001',
@@ -316,7 +316,7 @@ class StaffTest extends TestCase
 
         $this->expectException(\Illuminate\Database\QueryException::class);
 
-        Staff::create([
+        Staff::factory()->create([
             'name' => 'Second Employee',
             'email' => 'employee@example.com', // Same email
             'employee_id' => 'EMP002',
@@ -331,7 +331,7 @@ class StaffTest extends TestCase
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
         
-        Staff::create([
+        Staff::factory()->create([
             'employee_id' => 'EMP001',
             'status' => StaffStatus::ACTIVE,
         ]);
@@ -342,7 +342,7 @@ class StaffTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $staff = Staff::create([
+        $staff = Staff::factory()->create([
             'name' => 'Test Employee',
             'email' => 'test@example.com',
             'employee_id' => 'EMP001',

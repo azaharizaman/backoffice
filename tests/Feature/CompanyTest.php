@@ -13,11 +13,10 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_create_a_company()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
             'description' => 'A test company',
-            'is_active' => true,
         ]);
 
         $this->assertDatabaseHas('backoffice_companies', [
@@ -36,17 +35,14 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_create_company_hierarchy()
     {
-        $parentCompany = Company::create([
+        $parentCompany = Company::factory()->create([
             'name' => 'Parent Company',
             'code' => 'PARENT',
-            'is_active' => true,
         ]);
 
-        $childCompany = Company::create([
+        $childCompany = Company::factory()->childOf($parentCompany)->create([
             'name' => 'Child Company',
             'code' => 'CHILD',
-            'parent_company_id' => $parentCompany->id,
-            'is_active' => true,
         ]);
 
         $this->assertEquals($parentCompany->id, $childCompany->parent_company_id);
@@ -57,24 +53,19 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_get_root_company()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->root()->create([
             'name' => 'Root Company',
             'code' => 'ROOT',
-            'is_active' => true,
         ]);
 
-        $level1Company = Company::create([
+        $level1Company = Company::factory()->childOf($rootCompany)->create([
             'name' => 'Level 1 Company',
             'code' => 'L1',
-            'parent_company_id' => $rootCompany->id,
-            'is_active' => true,
         ]);
 
-        $level2Company = Company::create([
+        $level2Company = Company::factory()->childOf($level1Company)->create([
             'name' => 'Level 2 Company',
             'code' => 'L2',
-            'parent_company_id' => $level1Company->id,
-            'is_active' => true,
         ]);
 
         $this->assertEquals($rootCompany->id, $level2Company->rootCompany()->id);
@@ -85,31 +76,24 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_get_all_descendants()
     {
-        $parentCompany = Company::create([
+        $parentCompany = Company::factory()->create([
             'name' => 'Parent Company',
             'code' => 'PARENT',
-            'is_active' => true,
         ]);
 
-        $child1 = Company::create([
+        $child1 = Company::factory()->childOf($parentCompany)->create([
             'name' => 'Child 1',
             'code' => 'CHILD1',
-            'parent_company_id' => $parentCompany->id,
-            'is_active' => true,
         ]);
 
-        $child2 = Company::create([
+        $child2 = Company::factory()->childOf($parentCompany)->create([
             'name' => 'Child 2',
             'code' => 'CHILD2',
-            'parent_company_id' => $parentCompany->id,
-            'is_active' => true,
         ]);
 
-        $grandchild = Company::create([
+        $grandchild = Company::factory()->childOf($child1)->create([
             'name' => 'Grandchild',
             'code' => 'GRANDCHILD',
-            'parent_company_id' => $child1->id,
-            'is_active' => true,
         ]);
 
         $descendants = $parentCompany->allChildCompanies();
@@ -123,24 +107,19 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_get_ancestors()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->root()->create([
             'name' => 'Root Company',
             'code' => 'ROOT',
-            'is_active' => true,
         ]);
 
-        $level1Company = Company::create([
+        $level1Company = Company::factory()->childOf($rootCompany)->create([
             'name' => 'Level 1 Company',
             'code' => 'L1',
-            'parent_company_id' => $rootCompany->id,
-            'is_active' => true,
         ]);
 
-        $level2Company = Company::create([
+        $level2Company = Company::factory()->childOf($level1Company)->create([
             'name' => 'Level 2 Company',
             'code' => 'L2',
-            'parent_company_id' => $level1Company->id,
-            'is_active' => true,
         ]);
 
         $ancestors = $level2Company->allParentCompanies();
@@ -153,17 +132,14 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_check_if_company_is_root()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->root()->create([
             'name' => 'Root Company',
             'code' => 'ROOT',
-            'is_active' => true,
         ]);
 
-        $childCompany = Company::create([
+        $childCompany = Company::factory()->childOf($rootCompany)->create([
             'name' => 'Child Company',
             'code' => 'CHILD',
-            'parent_company_id' => $rootCompany->id,
-            'is_active' => true,
         ]);
 
         $this->assertTrue($rootCompany->isRoot());
@@ -173,17 +149,14 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_check_if_company_is_leaf()
     {
-        $parentCompany = Company::create([
+        $parentCompany = Company::factory()->create([
             'name' => 'Parent Company',
             'code' => 'PARENT',
-            'is_active' => true,
         ]);
 
-        $childCompany = Company::create([
+        $childCompany = Company::factory()->childOf($parentCompany)->create([
             'name' => 'Child Company',
             'code' => 'CHILD',
-            'parent_company_id' => $parentCompany->id,
-            'is_active' => true,
         ]);
 
         $this->assertFalse($parentCompany->isLeaf());
@@ -193,24 +166,19 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_get_hierarchy_depth()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->root()->create([
             'name' => 'Root Company',
             'code' => 'ROOT',
-            'is_active' => true,
         ]);
 
-        $level1Company = Company::create([
+        $level1Company = Company::factory()->childOf($rootCompany)->create([
             'name' => 'Level 1 Company',
             'code' => 'L1',
-            'parent_company_id' => $rootCompany->id,
-            'is_active' => true,
         ]);
 
-        $level2Company = Company::create([
+        $level2Company = Company::factory()->childOf($level1Company)->create([
             'name' => 'Level 2 Company',
             'code' => 'L2',
-            'parent_company_id' => $level1Company->id,
-            'is_active' => true,
         ]);
 
         $this->assertEquals(0, $rootCompany->getDepth());
@@ -221,24 +189,19 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_get_hierarchy_path()
     {
-        $rootCompany = Company::create([
+        $rootCompany = Company::factory()->root()->create([
             'name' => 'Root Company',
             'code' => 'ROOT',
-            'is_active' => true,
         ]);
 
-        $level1Company = Company::create([
+        $level1Company = Company::factory()->childOf($rootCompany)->create([
             'name' => 'Level 1 Company',
             'code' => 'L1',
-            'parent_company_id' => $rootCompany->id,
-            'is_active' => true,
         ]);
 
-        $level2Company = Company::create([
+        $level2Company = Company::factory()->childOf($level1Company)->create([
             'name' => 'Level 2 Company',
             'code' => 'L2',
-            'parent_company_id' => $level1Company->id,
-            'is_active' => true,
         ]);
 
         $path = $level2Company->getPath();
@@ -252,31 +215,24 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_get_siblings()
     {
-        $parentCompany = Company::create([
+        $parentCompany = Company::factory()->create([
             'name' => 'Parent Company',
             'code' => 'PARENT',
-            'is_active' => true,
         ]);
 
-        $child1 = Company::create([
+        $child1 = Company::factory()->childOf($parentCompany)->create([
             'name' => 'Child 1',
             'code' => 'CHILD1',
-            'parent_company_id' => $parentCompany->id,
-            'is_active' => true,
         ]);
 
-        $child2 = Company::create([
+        $child2 = Company::factory()->childOf($parentCompany)->create([
             'name' => 'Child 2',
             'code' => 'CHILD2',
-            'parent_company_id' => $parentCompany->id,
-            'is_active' => true,
         ]);
 
-        $child3 = Company::create([
+        $child3 = Company::factory()->childOf($parentCompany)->create([
             'name' => 'Child 3',
             'code' => 'CHILD3',
-            'parent_company_id' => $parentCompany->id,
-            'is_active' => true,
         ]);
 
         $siblings = $child1->getSiblings();
@@ -290,23 +246,19 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_scope_root_companies()
     {
-        $rootCompany1 = Company::create([
+        $rootCompany1 = Company::factory()->root()->create([
             'name' => 'Root Company 1',
             'code' => 'ROOT1',
-            'is_active' => true,
         ]);
 
-        $rootCompany2 = Company::create([
+        $rootCompany2 = Company::factory()->root()->create([
             'name' => 'Root Company 2',
             'code' => 'ROOT2',
-            'is_active' => true,
         ]);
 
-        $childCompany = Company::create([
+        $childCompany = Company::factory()->childOf($rootCompany1)->create([
             'name' => 'Child Company',
             'code' => 'CHILD',
-            'parent_company_id' => $rootCompany1->id,
-            'is_active' => true,
         ]);
 
         $rootCompanies = Company::root()->get();
@@ -320,16 +272,14 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_scope_active_companies()
     {
-        $activeCompany = Company::create([
+        $activeCompany = Company::factory()->active()->create([
             'name' => 'Active Company',
             'code' => 'ACTIVE',
-            'is_active' => true,
         ]);
 
-        $inactiveCompany = Company::create([
+        $inactiveCompany = Company::factory()->inactive()->create([
             'name' => 'Inactive Company',
             'code' => 'INACTIVE',
-            'is_active' => false,
         ]);
 
         $activeCompanies = Company::active()->get();
@@ -344,7 +294,7 @@ class CompanyTest extends TestCase
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
         
-        Company::create([
+        Company::factory()->create([
             'code' => 'TEST',
             'is_active' => true,
         ]);
@@ -353,9 +303,9 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_have_nullable_code()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
-            'is_active' => true,
+            'code' => null,
         ]);
 
         $this->assertNull($company->code);
@@ -364,10 +314,10 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_can_have_nullable_description()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
-            'is_active' => true,
+            'description' => null,
         ]);
 
         $this->assertNull($company->description);
@@ -376,7 +326,7 @@ class CompanyTest extends TestCase
     /** @test */
     public function it_defaults_to_active()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'code' => 'TEST',
         ]);

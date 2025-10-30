@@ -19,25 +19,25 @@ class ProcessResignationsCommandTest extends TestCase
 
     protected function createTestStructure()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
 
-        $officeType = OfficeType::create([
+        $officeType = OfficeType::factory()->create([
             'name' => 'Headquarters',
             'code' => 'HQ',
             'is_active' => true,
         ]);
 
-        $office = Office::create([
+        $office = Office::factory()->create([
             'name' => 'Main Office',
             'company_id' => $company->id,
             'office_type_id' => $officeType->id,
             'is_active' => true,
         ]);
 
-        $department = Department::create([
+        $department = Department::factory()->create([
             'name' => 'IT Department',
             'code' => 'IT',
             'office_id' => $office->id,
@@ -53,7 +53,7 @@ class ProcessResignationsCommandTest extends TestCase
         $structure = $this->createTestStructure();
 
         // Create staff with resignation due yesterday
-        $dueStaff = Staff::create([
+        $dueStaff = Staff::factory()->create([
             'name' => 'Due Staff',
             'email' => 'due@example.com',
             'employee_id' => 'EMP001',
@@ -65,7 +65,7 @@ class ProcessResignationsCommandTest extends TestCase
         ]);
 
         // Create staff with resignation in future
-        $futureStaff = Staff::create([
+        $futureStaff = Staff::factory()->create([
             'name' => 'Future Staff',
             'email' => 'future@example.com',
             'employee_id' => 'EMP002',
@@ -99,7 +99,7 @@ class ProcessResignationsCommandTest extends TestCase
         $structure = $this->createTestStructure();
 
         // Create staff with no resignations scheduled
-        Staff::create([
+        Staff::factory()->create([
             'name' => 'Active Staff',
             'email' => 'active@example.com',
             'employee_id' => 'EMP003',
@@ -118,7 +118,7 @@ class ProcessResignationsCommandTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $dueStaff = Staff::create([
+        $dueStaff = Staff::factory()->create([
             'name' => 'Due Staff',
             'email' => 'due@example.com',
             'employee_id' => 'EMP004',
@@ -144,7 +144,7 @@ class ProcessResignationsCommandTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $dueStaff = Staff::create([
+        $dueStaff = Staff::factory()->create([
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'employee_id' => 'EMP005',
@@ -169,7 +169,7 @@ class ProcessResignationsCommandTest extends TestCase
         $structure = $this->createTestStructure();
 
         // Create multiple staff with due resignations
-        $staff1 = Staff::create([
+        $staff1 = Staff::factory()->create([
             'name' => 'Staff One',
             'email' => 'one@example.com',
             'employee_id' => 'EMP006',
@@ -179,7 +179,7 @@ class ProcessResignationsCommandTest extends TestCase
             'is_active' => true,
         ]);
 
-        $staff2 = Staff::create([
+        $staff2 = Staff::factory()->create([
             'name' => 'Staff Two',
             'email' => 'two@example.com',
             'employee_id' => 'EMP007',
@@ -209,7 +209,7 @@ class ProcessResignationsCommandTest extends TestCase
     {
         $structure = $this->createTestStructure();
 
-        $todayStaff = Staff::create([
+        $todayStaff = Staff::factory()->create([
             'name' => 'Today Staff',
             'email' => 'today@example.com',
             'employee_id' => 'EMP008',

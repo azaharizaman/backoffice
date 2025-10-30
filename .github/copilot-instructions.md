@@ -70,6 +70,81 @@ enum StaffStatus: string {
 
 ## Model Development Guidelines
 
+### Model Factories
+
+**CRITICAL**: All models MUST have factories. When creating a new model, always create a corresponding factory.
+
+#### Creating a New Factory
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace AzahariZaman\BackOffice\Database\Factories;
+
+use AzahariZaman\BackOffice\Models\YourModel;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<YourModel>
+ */
+class YourModelFactory extends Factory
+{
+    protected $model = YourModel::class;
+
+    public function definition(): array
+    {
+        return [
+            'name' => $this->faker->name(),
+            'code' => strtoupper($this->faker->unique()->lexify('???')),
+            'is_active' => true,
+            // Add other required fields
+        ];
+    }
+
+    /**
+     * State methods for common scenarios
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
+    }
+}
+```
+
+#### Registering Factory in Model
+
+Every model must include a `newFactory()` method:
+
+```php
+class YourModel extends Model
+{
+    use HasFactory;
+    
+    // ... model code ...
+    
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \AzahariZaman\BackOffice\Database\Factories\YourModelFactory
+    {
+        return \AzahariZaman\BackOffice\Database\Factories\YourModelFactory::new();
+    }
+}
+```
+
+#### Factory Best Practices
+
+1. **Always use factories in tests** - Never use `Model::create()` directly in tests
+2. **Provide useful states** - Add state methods for common scenarios (active, inactive, etc.)
+3. **Handle relationships properly** - Use `for()` method or relationship factories
+4. **Use realistic fake data** - Leverage Faker to generate realistic test data
+5. **Support hierarchies** - Add methods like `childOf()` for hierarchical models
+6. **Document states** - Add PHPDoc comments explaining what each state does
+
 ### Hierarchical Models
 When working with hierarchical models (Company, Office, Department):
 
@@ -244,9 +319,12 @@ public function test_get_ancestors_returns_all_supervisors(): void
 public function test_circular_reference_validation_prevents_invalid_assignments(): void
 ```
 
-### Test Data Setup
+### Test Data Setup with Model Factories
+
+**IMPORTANT**: Always use model factories when creating test data. Never manually create models with `Model::create()` unless specifically testing creation logic.
+
 ```php
-// Use proper model factories
+// Use proper model factories - PREFERRED approach
 protected function setUp(): void
 {
     parent::setUp();
@@ -256,21 +334,67 @@ protected function setUp(): void
     $this->department = Department::factory()->for($this->company)->create();
 }
 
-// Create realistic hierarchies
-$ceo = Staff::factory()->create(['position' => 'CEO']);
-$manager = Staff::factory()->create(['supervisor_id' => $ceo->id]);
-$employee = Staff::factory()->create(['supervisor_id' => $manager->id]);
+// Create realistic hierarchies with factories
+$ceo = Staff::factory()->ceo()->inOffice($office)->create();
+$manager = Staff::factory()->manager()->withSupervisor($ceo)->create();
+$employee = Staff::factory()->withSupervisor($manager)->create();
 
-// For transfer testing, use manual creation (no factories available)
-$transfer = StaffTransfer::create([
-    'staff_id' => $staff->id,
-    'from_office_id' => $sourceOffice->id,
-    'to_office_id' => $targetOffice->id,
-    'effective_date' => now()->addWeek(),
-    'status' => StaffTransferStatus::PENDING,
-    'requested_by_id' => $hrStaff->id,
-    'is_immediate' => false,
-]);
+// Use factory states for specific scenarios
+$inactiveCompany = Company::factory()->inactive()->create();
+$resignedStaff = Staff::factory()->resigned('Personal reasons')->create();
+$pendingTransfer = StaffTransfer::factory()->pending()->create();
+
+// Create hierarchical structures
+$parentCompany = Company::factory()->create();
+$childCompany = Company::factory()->childOf($parentCompany)->create();
+
+$parentOffice = Office::factory()->for($company)->create();
+$childOffice = Office::factory()->childOf($parentOffice)->create();
+
+// Use for() method for relationships
+$office = Office::factory()->for($company)->create();
+$staff = Staff::factory()->for($office)->create();
+$unit = Unit::factory()->for($unitGroup)->create();
+```
+
+### Available Model Factories
+
+All models have factories with useful states:
+
+- **Company**: `active()`, `inactive()`, `childOf($parent)`, `root()`
+- **Office**: `active()`, `inactive()`, `childOf($parent)`, `root()`
+- **Department**: `active()`, `inactive()`, `childOf($parent)`, `root()`
+- **Staff**: `active()`, `inactive()`, `resigned()`, `pendingResignation()`, `onProbation()`, `suspended()`, `onLeave()`, `topLevel()`, `manager()`, `ceo()`, `withSupervisor($staff)`, `inOffice($office)`, `inDepartment($dept)`, `withBoth($office, $dept)`, `departmentOnly($dept)`
+- **Unit**: `active()`, `inactive()`
+- **UnitGroup**: `active()`, `inactive()`
+- **OfficeType**: `active()`, `inactive()`
+- **StaffTransfer**: `immediate()`, `scheduled()`, `pending()`, `approved()`, `rejected()`, `cancelled()`, `completed()`, `withDepartmentChange()`, `withSupervisorChange()`, `withPositionChange()`, `complete()`
+
+### Factory Usage Examples
+
+```php
+// Create a complete organizational structure
+$company = Company::factory()->create();
+$office = Office::factory()->for($company)->create();
+$department = Department::factory()->for($company)->create();
+
+// Create staff hierarchy
+$ceo = Staff::factory()->ceo()->inOffice($office)->create();
+$vp = Staff::factory()->manager()->withSupervisor($ceo)->inOffice($office)->create();
+$manager = Staff::factory()->manager()->withSupervisor($vp)->create();
+$employee = Staff::factory()->withSupervisor($manager)->inDepartment($department)->create();
+
+// Create transfer with all changes
+$transfer = StaffTransfer::factory()
+    ->complete()
+    ->approved()
+    ->immediate()
+    ->create();
+
+// Create unit structure
+$unitGroup = UnitGroup::factory()->for($company)->create();
+$unit = Unit::factory()->for($unitGroup)->create();
+$staff->units()->attach($unit);
 ```
 
 ## Database Design Patterns

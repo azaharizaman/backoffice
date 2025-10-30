@@ -191,4 +191,12 @@ class Office extends Model
             $q->where('office_type_id', $officeTypeId);
         });
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \AzahariZaman\BackOffice\Database\Factories\OfficeFactory
+    {
+        return \AzahariZaman\BackOffice\Database\Factories\OfficeFactory::new();
+    }
 }

@@ -108,4 +108,12 @@ class UnitGroup extends Model
     {
         return $query->where('company_id', $companyId);
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \AzahariZaman\BackOffice\Database\Factories\UnitGroupFactory
+    {
+        return \AzahariZaman\BackOffice\Database\Factories\UnitGroupFactory::new();
+    }
 }

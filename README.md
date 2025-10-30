@@ -23,6 +23,7 @@ A comprehensive Laravel package for managing hierarchical company structures, of
 - **Organizational Charts**: Comprehensive reporting line management with chart generation
 - **Export Capabilities**: JSON, CSV, and DOT (Graphviz) export formats
 - **Office Types**: Configurable office type categorization
+- **Model Factories**: 🆕 Comprehensive factories for all models with rich states for testing
 - **Comprehensive Policies**: Built-in authorization policies
 - **Observer Patterns**: Automatic event handling for data changes
 - **Console Commands**: Management utilities via Artisan commands
@@ -56,12 +57,17 @@ php artisan vendor:publish --provider="AzahariZaman\BackOffice\BackOfficeService
 ## Quick Start
 
 ```php
-use AzahariZaman\BackOffice\Models\{Company, Staff};
+use AzahariZaman\BackOffice\Models\{Company, Office, Staff};
 use AzahariZaman\BackOffice\Helpers\OrganizationalChart;
 
-// Create hierarchical staff structure
-$ceo = Staff::create([...]);
-$manager = Staff::create(['supervisor_id' => $ceo->id, ...]);
+// Create organizational structure using factories
+$company = Company::factory()->create(['name' => 'Acme Corp']);
+$office = Office::factory()->for($company)->create();
+
+// Create hierarchical staff structure using factories
+$ceo = Staff::factory()->ceo()->inOffice($office)->create();
+$manager = Staff::factory()->manager()->withSupervisor($ceo)->create();
+$employee = Staff::factory()->withSupervisor($manager)->create();
 
 // Generate organizational chart
 $chart = OrganizationalChart::forCompany($company);
@@ -78,6 +84,7 @@ See the [documentation](docs/README.md) for detailed usage instructions.
 - [Installation Guide](docs/installation.md)
 - [Configuration](docs/configuration.md)
 - [Models & Relationships](docs/models.md)
+- **[Model Factories](docs/factories.md)** 🆕
 - [Organizational Chart & Reporting Lines](docs/organizational-chart.md)
 - [Traits & Behaviors](docs/traits.md)
 - [Policies & Authorization](docs/policies.md)

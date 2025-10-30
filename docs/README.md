@@ -7,6 +7,7 @@ Welcome to the comprehensive documentation for the BackOffice Laravel package. T
 - [Installation Guide](installation.md)
 - [Configuration](configuration.md)
 - [Models & Relationships](models.md)
+- **[Model Factories](factories.md)** ⭐ _New!_
 - [Organizational Chart & Reporting Lines](organizational-chart.md)
 - [Staff Resignation Management](resignation.md)
 - [Staff Transfer System](staff-transfers.md)
@@ -69,55 +70,57 @@ composer require azaharizaman/backoffice
 php artisan backoffice:install
 ```
 
-3. **Create your first company**:
+3. **Create your first company using factories** (recommended):
 ```php
-use Carbon\Carbon;
+use AzahariZaman\BackOffice\Models\Company;
+use AzahariZaman\BackOffice\Models\Office;
+use AzahariZaman\BackOffice\Models\Department;
+use AzahariZaman\BackOffice\Models\Staff;
 
-$company = Company::create([
+// Create company
+$company = Company::factory()->create([
     'name' => 'My Company',
     'code' => 'MYCO',
-    'description' => 'My company description',
-    'is_active' => true,
 ]);
 ```
 
 4. **Create offices and departments**:
 ```php
-// Create main office
-$mainOffice = $company->offices()->create([
+// Create main office using factory
+$mainOffice = Office::factory()->for($company)->create([
     'name' => 'Head Office',
     'code' => 'HO',
     'address' => '123 Main Street',
-    'is_active' => true,
 ]);
 
-// Create department
-$department = $company->departments()->create([
+// Create department using factory
+$department = Department::factory()->for($company)->create([
     'name' => 'Human Resources',
     'code' => 'HR',
-    'is_active' => true,
 ]);
 ```
 
-5. **Add staff**:
+5. **Add staff using factories**:
 ```php
-$staff = Staff::create([
-    'employee_id' => 'EMP001',
-    'first_name' => 'John',
-    'last_name' => 'Doe',
-    'email' => 'john.doe@company.com',
-    'office_id' => $mainOffice->id,
-    'department_id' => $department->id,
-    'position' => 'HR Manager',
-    'hire_date' => now(),
-    'status' => StaffStatus::ACTIVE,
-    'is_active' => true,
-]);
+// Create staff using factory
+$staff = Staff::factory()
+    ->withBoth($mainOffice, $department)
+    ->create([
+        'first_name' => 'John',
+        'last_name' => 'Doe',
+        'email' => 'john.doe@company.com',
+        'position' => 'HR Manager',
+    ]);
+
+// Create organizational hierarchy
+$ceo = Staff::factory()->ceo()->inOffice($mainOffice)->create();
+$manager = Staff::factory()->manager()->withSupervisor($ceo)->create();
+$employee = Staff::factory()->withSupervisor($manager)->create();
 ```
 
 6. **Manage staff resignations**:
 ```php
-use AzahariZaman\BackOffice\Models\Company;
+use Carbon\Carbon;
 
 // Schedule resignation 30 days from now
 $staff->scheduleResignation(
@@ -128,6 +131,8 @@ $staff->scheduleResignation(
 // Process resignations automatically
 php artisan backoffice:process-resignations --force
 ```
+
+> **💡 Tip**: For testing and development, always use [Model Factories](factories.md) to create data. See the [Factories Documentation](factories.md) for comprehensive examples.
 
 ## Key Concepts
 

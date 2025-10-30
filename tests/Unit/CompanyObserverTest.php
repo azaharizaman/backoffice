@@ -14,7 +14,7 @@ class CompanyObserverTest extends TestCase
     /** @test */
     public function it_prevents_circular_reference_when_creating()
     {
-        $company = Company::create([
+        $company = Company::factory()->create([
             'name' => 'Test Company',
             'is_active' => true,
         ]);
@@ -22,7 +22,7 @@ class CompanyObserverTest extends TestCase
         $this->expectException(CircularReferenceException::class);
         $this->expectExceptionMessage('Cannot set parent: Circular reference detected');
 
-        Company::create([
+        Company::factory()->create([
             'name' => 'Child Company',
             'parent_company_id' => $company->id,
             'is_active' => true,
@@ -35,18 +35,18 @@ class CompanyObserverTest extends TestCase
     /** @test */
     public function it_prevents_circular_reference_when_updating()
     {
-        $parentCompany = Company::create([
+        $parentCompany = Company::factory()->create([
             'name' => 'Parent Company',
             'is_active' => true,
         ]);
 
-        $childCompany = Company::create([
+        $childCompany = Company::factory()->create([
             'name' => 'Child Company',
             'parent_company_id' => $parentCompany->id,
             'is_active' => true,
         ]);
 
-        $grandChildCompany = Company::create([
+        $grandChildCompany = Company::factory()->create([
             'name' => 'Grandchild Company',
             'parent_company_id' => $childCompany->id,
             'is_active' => true,
@@ -62,17 +62,17 @@ class CompanyObserverTest extends TestCase
     /** @test */
     public function it_allows_valid_hierarchy_changes()
     {
-        $company1 = Company::create([
+        $company1 = Company::factory()->create([
             'name' => 'Company 1',
             'is_active' => true,
         ]);
 
-        $company2 = Company::create([
+        $company2 = Company::factory()->create([
             'name' => 'Company 2',
             'is_active' => true,
         ]);
 
-        $childCompany = Company::create([
+        $childCompany = Company::factory()->create([
             'name' => 'Child Company',
             'parent_company_id' => $company1->id,
             'is_active' => true,
@@ -87,12 +87,12 @@ class CompanyObserverTest extends TestCase
     /** @test */
     public function it_allows_removing_parent()
     {
-        $parentCompany = Company::create([
+        $parentCompany = Company::factory()->create([
             'name' => 'Parent Company',
             'is_active' => true,
         ]);
 
-        $childCompany = Company::create([
+        $childCompany = Company::factory()->create([
             'name' => 'Child Company',
             'parent_company_id' => $parentCompany->id,
             'is_active' => true,
