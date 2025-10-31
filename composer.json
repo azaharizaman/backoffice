@@ -1,5 +1,5 @@
 {
-    "name": "azaharizaman/backoffice",
+    "name": "azaharizaman/laravel-backoffice",
     "description": "A Laravel package for managing hierarchical company structures, offices, departments, staff, and units",
     "type": "library",
     "license": "MIT",
