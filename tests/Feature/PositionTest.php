@@ -197,7 +197,7 @@ class PositionTest extends TestCase
     public function it_can_scope_management_positions(): void
     {
         Position::factory()->for($this->company)->cLevel()->create();
-        Position::factory()->for($this->company)->topManagement()->create();
+        Position::factory()->for($this->company)->seniorManagement()->create();
         Position::factory()->for($this->company)->management()->create();
         Position::factory()->for($this->company)->executive()->create();
 

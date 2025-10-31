@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Database\Factories;
 
-use AzahariZaman\BackOffice\Enums\PositionType;
 use AzahariZaman\BackOffice\Models\Company;
-use AzahariZaman\BackOffice\Models\Department;
 use AzahariZaman\BackOffice\Models\Position;
+use AzahariZaman\BackOffice\Models\Department;
+use AzahariZaman\BackOffice\Enums\PositionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -62,6 +62,21 @@ class PositionFactory extends Factory
     }
 
     /**
+     * Configure the factory for HR position.
+     */
+    public function hr(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => PositionType::HR,
+            'name' => $this->faker->randomElement([
+                'HR Manager',
+                'HR Executive',
+                'HR Specialist',
+            ]),
+        ]);
+    }
+
+    /**
      * Configure the factory for C-Level position.
      */
     public function cLevel(): static
@@ -80,7 +95,7 @@ class PositionFactory extends Factory
     /**
      * Configure the factory for Top Management position.
      */
-    public function topManagement(): static
+    public function seniorManagement(): static
     {
         return $this->state(fn (array $attributes) => [
             'type' => PositionType::TOP_MANAGEMENT,

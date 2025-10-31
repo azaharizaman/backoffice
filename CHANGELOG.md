@@ -14,7 +14,7 @@ All notable changes to `backoffice` will be documented in this file.
   - Position-based staff filtering and reporting
   - Full authorization through PositionPolicy
 - **Position Factory** - Comprehensive factory with position type states
-  - States for all 10 position types (cLevel, topManagement, management, etc.)
+  - States for all 10 position types (cLevel, seniorManagement, management, etc.)
   - Support for default department assignment
   - Active/inactive states
 - **Staff Model Updates** - Position integration and department precedence
@@ -89,3 +89,8 @@ All notable changes to `backoffice` will be documented in this file.
 - Observer pattern implementation
 - Console commands for management
 - Full documentation suite
+
+## 1.0.1 - 2025-10-30
+
+- Update test code coverage
+- Update StaffFactory to use the new PositionFactory

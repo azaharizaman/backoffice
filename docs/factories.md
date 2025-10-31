@@ -105,7 +105,7 @@ $position = Position::factory()->inactive()->create();
 - `inactive()` - Inactive position
 - `withDepartment(Department $department)` - Position with default department
 - `cLevel()` - C-Level executive position (CEO, CFO, CTO, etc.)
-- `topManagement()` - Top Management position (VP, Senior VP, General Manager)
+- `seniorManagement()` - Top Management position (VP, Senior VP, General Manager)
 - `management()` - Management position (Manager, Director, Department Head)
 - `juniorManagement()` - Junior Management position (Assistant Manager, Team Leader, Supervisor)
 - `seniorExecutive()` - Senior Executive position
