@@ -27,11 +27,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $full_name
  * @property string|null $email
  * @property string|null $phone
- * @property int|null $office_id
- * @property int|null $department_id
- * @property int|null $supervisor_id
- * @property string|null $position
- * @property \Illuminate\Support\Carbon|null $hire_date
+      * @property int|null $office_id
+     * @property int|null $department_id
+     * @property int|null $position_id
+     * @property int|null $supervisor_id
+     * @property \Illuminate\Support\Carbon|null $hire_date
  * @property \Illuminate\Support\Carbon|null $resignation_date
  * @property string|null $resignation_reason
  * @property \Illuminate\Support\Carbon|null $resigned_at
@@ -41,11 +41,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * 
- * @property-read Office|null $office
- * @property-read Department|null $department
- * @property-read Staff|null $supervisor
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Staff> $subordinates
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Unit> $units
+      * @property-read Office|null $office
+     * @property-read Department|null $department
+     * @property-read Position|null $position
+     * @property-read Staff|null $supervisor
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, Staff> $subordinates
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, Unit> $units
  */
 class Staff extends Model
 {
@@ -67,8 +68,8 @@ class Staff extends Model
         'phone',
         'office_id',
         'department_id',
+        'position_id',
         'supervisor_id',
-        'position',
         'hire_date',
         'resignation_date',
         'resignation_reason',
@@ -110,6 +111,14 @@ class Staff extends Model
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * Get the position of this staff.
+     */
+    public function position(): BelongsTo
+    {
+        return $this->belongsTo(Position::class);
     }
 
     /**
@@ -187,6 +196,57 @@ class Staff extends Model
     public function hasDepartment(): bool
     {
         return !is_null($this->department_id);
+    }
+
+    /**
+     * Check if staff has a position assigned.
+     */
+    public function hasPosition(): bool
+    {
+        return !is_null($this->position_id);
+    }
+
+    /**
+     * Get the effective department for this staff.
+     * 
+     * Returns the staff's department if set, otherwise returns the position's
+     * default department if the position has one.
+     * 
+     * @return Department|null
+     */
+    public function getEffectiveDepartment(): ?Department
+    {
+        // Staff's own department takes precedence
+        if ($this->department_id !== null) {
+            return $this->department;
+        }
+
+        // Fall back to position's default department
+        if ($this->position && $this->position->department_id !== null) {
+            return $this->position->department;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the effective department ID for this staff.
+     * 
+     * @return int|null
+     */
+    public function getEffectiveDepartmentId(): ?int
+    {
+        // Staff's own department takes precedence
+        if ($this->department_id !== null) {
+            return $this->department_id;
+        }
+
+        // Fall back to position's default department
+        if ($this->position && $this->position->department_id !== null) {
+            return $this->position->department_id;
+        }
+
+        return null;
     }
 
     /**

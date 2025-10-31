@@ -65,7 +65,6 @@ class OrganizationalChartTest extends TestCase
             'first_name' => 'John',
             'last_name' => 'Smith',
             'email' => 'john.smith@testcorp.com',
-            'position' => 'Chief Executive Officer',
             'office_id' => $this->office->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
@@ -77,7 +76,6 @@ class OrganizationalChartTest extends TestCase
             'first_name' => 'Jane',
             'last_name' => 'Doe',
             'email' => 'jane.doe@testcorp.com',
-            'position' => 'Chief Technology Officer',
             'office_id' => $this->office->id,
             'supervisor_id' => $ceo->id,
             'status' => StaffStatus::ACTIVE,
@@ -90,7 +88,6 @@ class OrganizationalChartTest extends TestCase
             'first_name' => 'Bob',
             'last_name' => 'Johnson',
             'email' => 'bob.johnson@testcorp.com',
-            'position' => 'Senior Developer',
             'office_id' => $this->office->id,
             'department_id' => $this->department->id,
             'supervisor_id' => $cto->id,
@@ -104,7 +101,6 @@ class OrganizationalChartTest extends TestCase
             'first_name' => 'Alice',
             'last_name' => 'Brown',
             'email' => 'alice.brown@testcorp.com',
-            'position' => 'Junior Developer',
             'office_id' => $this->office->id,
             'department_id' => $this->department->id,
             'supervisor_id' => $cto->id,
@@ -118,7 +114,6 @@ class OrganizationalChartTest extends TestCase
             'first_name' => 'Charlie',
             'last_name' => 'Wilson',
             'email' => 'charlie.wilson@testcorp.com',
-            'position' => 'Chief Financial Officer',
             'office_id' => $this->office->id,
             'supervisor_id' => $ceo->id,
             'status' => StaffStatus::ACTIVE,
@@ -149,7 +144,6 @@ class OrganizationalChartTest extends TestCase
         $this->assertCount(1, $chart['chart']); // Only CEO at top level
         $topLevel = $chart['chart'][0];
         $this->assertEquals('John Smith', $topLevel['name']);
-        $this->assertEquals('Chief Executive Officer', $topLevel['position']);
         $this->assertCount(2, $topLevel['subordinates']); // CTO and CFO
     }
     
@@ -161,7 +155,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
-            'position' => 'CEO',
             'office_id' => $this->office->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
@@ -171,7 +164,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
-            'position' => 'Manager',
             'office_id' => $this->office->id,
             'supervisor_id' => $ceo->id,
             'status' => StaffStatus::ACTIVE,
@@ -187,7 +179,6 @@ class OrganizationalChartTest extends TestCase
         $ceoData = collect($flatChart)->firstWhere('employee_id', 'EMP001');
         $this->assertNotNull($ceoData);
         $this->assertEquals('John Smith', $ceoData['name']);
-        $this->assertEquals('CEO', $ceoData['position']);
         $this->assertNull($ceoData['supervisor']); // CEO has no supervisor
         $this->assertEquals(1, $ceoData['direct_subordinates_count']);
         $this->assertEquals(0, $ceoData['reporting_level']);
@@ -196,7 +187,6 @@ class OrganizationalChartTest extends TestCase
         $managerData = collect($flatChart)->firstWhere('employee_id', 'EMP002');
         $this->assertNotNull($managerData);
         $this->assertEquals('Jane Doe', $managerData['name']);
-        $this->assertEquals('Manager', $managerData['position']);
         $this->assertNotNull($managerData['supervisor']);
         $this->assertEquals('John Smith', $managerData['supervisor']['name']);
         $this->assertEquals(0, $managerData['direct_subordinates_count']);
@@ -211,7 +201,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
-            'position' => 'CEO',
             'office_id' => $this->office->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
@@ -221,7 +210,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
-            'position' => 'Manager',
             'office_id' => $this->office->id,
             'supervisor_id' => $ceo->id,
             'status' => StaffStatus::ACTIVE,
@@ -232,7 +220,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP003',
             'first_name' => 'Bob',
             'last_name' => 'Johnson',
-            'position' => 'Employee',
             'office_id' => $this->office->id,
             'supervisor_id' => $manager->id,
             'status' => StaffStatus::ACTIVE,
@@ -265,7 +252,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
-            'position' => 'CEO',
             'office_id' => $this->office->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
@@ -277,7 +263,6 @@ class OrganizationalChartTest extends TestCase
                 'employee_id' => sprintf('EMP%03d', $i),
                 'first_name' => "Manager{$i}",
                 'last_name' => 'Smith',
-                'position' => 'Manager',
                 'office_id' => $this->office->id,
                 'supervisor_id' => $ceo->id,
                 'status' => StaffStatus::ACTIVE,
@@ -291,7 +276,6 @@ class OrganizationalChartTest extends TestCase
                     'employee_id' => sprintf('EMP%03d', $empNum),
                     'first_name' => "Employee{$empNum}",
                     'last_name' => 'Smith',
-                    'position' => 'Employee',
                     'office_id' => $this->office->id,
                     'supervisor_id' => $manager->id,
                     'status' => StaffStatus::ACTIVE,
@@ -332,7 +316,6 @@ class OrganizationalChartTest extends TestCase
             'first_name' => 'John',
             'last_name' => 'Smith',
             'email' => 'john@test.com',
-            'position' => 'CEO',
             'office_id' => $this->office->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
@@ -343,7 +326,6 @@ class OrganizationalChartTest extends TestCase
             'first_name' => 'Jane',
             'last_name' => 'Doe',
             'email' => 'jane@test.com',
-            'position' => 'Manager',
             'office_id' => $this->office->id,
             'supervisor_id' => $ceo->id,
             'status' => StaffStatus::ACTIVE,
@@ -368,7 +350,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
-            'position' => 'CEO',
             'office_id' => $this->office->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
@@ -378,7 +359,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
-            'position' => 'Manager',
             'office_id' => $this->office->id,
             'supervisor_id' => $ceo->id,
             'status' => StaffStatus::ACTIVE,
@@ -402,7 +382,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
-            'position' => 'CEO',
             'office_id' => $this->office->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
@@ -412,7 +391,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
-            'position' => 'Manager',
             'office_id' => $this->office->id,
             'supervisor_id' => $ceo->id,
             'status' => StaffStatus::ACTIVE,
@@ -423,7 +401,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP003',
             'first_name' => 'Bob',
             'last_name' => 'Johnson',
-            'position' => 'Employee',
             'office_id' => $this->office->id,
             'supervisor_id' => $manager->id,
             'status' => StaffStatus::ACTIVE,
@@ -441,7 +418,6 @@ class OrganizationalChartTest extends TestCase
         // Check root staff info
         $this->assertEquals($manager->id, $chart['root_staff']['id']);
         $this->assertEquals('Jane Doe', $chart['root_staff']['name']);
-        $this->assertEquals('Manager', $chart['root_staff']['position']);
         
         // Check metadata
         $this->assertEquals(1, $chart['metadata']['team_size']); // 1 employee below
@@ -461,7 +437,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP001',
             'first_name' => 'John',
             'last_name' => 'Smith',
-            'position' => 'CEO',
             'office_id' => $this->office->id,
             'status' => StaffStatus::ACTIVE,
             'is_active' => true,
@@ -472,7 +447,6 @@ class OrganizationalChartTest extends TestCase
             'employee_id' => 'EMP002',
             'first_name' => 'Jane',
             'last_name' => 'Doe',
-            'position' => 'Manager',
             'office_id' => $this->office->id,
             'supervisor_id' => $ceo->id,
             'status' => StaffStatus::ACTIVE,
@@ -485,7 +459,6 @@ class OrganizationalChartTest extends TestCase
                 'employee_id' => sprintf('EMP%03d', $i),
                 'first_name' => "Employee{$i}",
                 'last_name' => 'Smith',
-                'position' => 'Employee',
                 'office_id' => $this->office->id,
                 'supervisor_id' => $manager->id,
                 'status' => StaffStatus::ACTIVE,

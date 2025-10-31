@@ -87,8 +87,15 @@ return new class extends Migration
             $table->text('rejection_reason')->nullable();
             
             // Position changes
-            $table->string('from_position')->nullable();
-            $table->string('to_position')->nullable();
+            $table->foreignId('from_position_id')
+                ->nullable()
+                ->constrained('backoffice_positions')
+                ->onDelete('restrict');
+            
+            $table->foreignId('to_position_id')
+                ->nullable()
+                ->constrained('backoffice_positions')
+                ->onDelete('restrict');
             
             // Metadata
             $table->boolean('is_immediate')->default(false);

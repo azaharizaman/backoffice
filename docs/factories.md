@@ -77,6 +77,46 @@ $department = Department::factory()->inactive()->create();
 - `childOf(Department $parent)` - Child department of specified parent
 - `root()` - Root department with no parent
 
+### Position Factory
+
+Create positions with various hierarchical types:
+
+```php
+// Create a basic position
+$position = Position::factory()->for($company)->create();
+
+// Create position with specific type
+$ceo = Position::factory()->cLevel()->for($company)->create();
+$manager = Position::factory()->management()->for($company)->create();
+$executive = Position::factory()->executive()->for($company)->create();
+
+// Create position with default department
+$position = Position::factory()
+    ->for($company)
+    ->withDepartment($department)
+    ->create();
+
+// Create inactive position
+$position = Position::factory()->inactive()->create();
+```
+
+**Available States:**
+- `active()` - Active position
+- `inactive()` - Inactive position
+- `withDepartment(Department $department)` - Position with default department
+- `cLevel()` - C-Level executive position (CEO, CFO, CTO, etc.)
+- `topManagement()` - Top Management position (VP, Senior VP, General Manager)
+- `management()` - Management position (Manager, Director, Department Head)
+- `juniorManagement()` - Junior Management position (Assistant Manager, Team Leader, Supervisor)
+- `seniorExecutive()` - Senior Executive position
+- `executive()` - Executive position
+- `juniorExecutive()` - Junior Executive position
+- `nonExecutive()` - Non-Executive position (Technician, Coordinator, Support Staff)
+- `clerical()` - Clerical position (Clerk, Data Entry, Secretary)
+- `assistant()` - Assistant position (General Assistant, Admin Assistant, Office Assistant)
+
+> **📖 For comprehensive Position documentation**, see [Position Management](positions.md)
+
 ### Staff Factory
 
 Create staff with complex organizational relationships:
@@ -97,6 +137,10 @@ $staff = Staff::factory()->withBoth($office, $department)->create();
 // Create staff with supervisor
 $manager = Staff::factory()->manager()->create();
 $employee = Staff::factory()->withSupervisor($manager)->create();
+
+// Create staff with position
+$position = Position::factory()->management()->for($company)->create();
+$staff = Staff::factory()->withPosition($position)->create();
 
 // Create top-level executive
 $ceo = Staff::factory()->ceo()->create();
@@ -120,6 +164,7 @@ $staff = Staff::factory()->pendingResignation('Better opportunity')->create();
 - `suspended()` - Suspended staff
 - `onLeave()` - Staff on leave
 - `withSupervisor(Staff $supervisor)` - Assign supervisor
+- `withPosition(?Position $position)` - Assign position
 - `topLevel()` - Top-level staff without supervisor
 - `manager()` - Manager position
 - `ceo()` - CEO/President position

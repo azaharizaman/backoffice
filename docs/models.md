@@ -9,10 +9,13 @@ The BackOffice package provides several Eloquent models that work together to cr
 1. **Company** - Root organizational entity
 2. **Office** - Physical office locations (hierarchical)
 3. **Department** - Logical organizational units (hierarchical)
-4. **Staff** - Employees/personnel
-5. **Unit** - Logical staff groupings (flat structure)
-6. **UnitGroup** - Containers for units
-7. **OfficeType** - Categorization for offices
+4. **Position** - Job positions with hierarchical types (NEW)
+5. **Staff** - Employees/personnel
+6. **Unit** - Logical staff groupings (flat structure)
+7. **UnitGroup** - Containers for units
+8. **OfficeType** - Categorization for offices
+
+> **📖 For comprehensive Position documentation**, see [Position Management](positions.md)
 
 ## Company Model
 

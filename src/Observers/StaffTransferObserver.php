@@ -43,8 +43,8 @@ class StaffTransferObserver
             $transfer->from_supervisor_id = $staff->supervisor_id;
         }
         
-        if (!array_key_exists('from_position', $attributes) && $staff->position) {
-            $transfer->from_position = $staff->position;
+        if (!array_key_exists('from_position_id', $attributes) && $staff->position_id) {
+            $transfer->from_position_id = $staff->position_id;
         }
         
         // Set default status if not provided
@@ -335,9 +335,11 @@ class StaffTransferObserver
             }
         }
         
-        // Update position
-        if ($transfer->to_position && $transfer->to_position !== $staff->position) {
-            $updates['position'] = $transfer->to_position;
+        // Update position assignment (only if from_position_id is set, indicating a position change)
+        if ($transfer->from_position_id !== null) {
+            if ($transfer->to_position_id !== $staff->position_id) {
+                $updates['position_id'] = $transfer->to_position_id;
+            }
         }
         
         if (!empty($updates)) {

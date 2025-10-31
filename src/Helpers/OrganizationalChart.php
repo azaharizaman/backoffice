@@ -49,7 +49,7 @@ class OrganizationalChart
             'root_staff' => [
                 'id' => $staff->id,
                 'name' => $staff->full_name,
-                'position' => $staff->position,
+                'position' => $staff->position?->name,
             ],
             'chart' => $staff->getOrganizationalChart(),
             'metadata' => [
@@ -73,7 +73,7 @@ class OrganizationalChart
                 'id' => $staff->id,
                 'employee_id' => $staff->employee_id,
                 'name' => $staff->full_name,
-                'position' => $staff->position,
+                'position' => $staff->position?->name,
                 'email' => $staff->email,
                 'office' => $staff->office?->name,
                 'department' => $staff->department?->name,
@@ -103,13 +103,13 @@ class OrganizationalChart
                 'staff' => [
                     'id' => $staff->id,
                     'name' => $staff->full_name,
-                    'position' => $staff->position,
+                    'position' => $staff->position?->name,
                 ],
                 'path' => $path->map(function (Staff $pathStaff) {
                     return [
                         'id' => $pathStaff->id,
                         'name' => $pathStaff->full_name,
-                        'position' => $pathStaff->position,
+                        'position' => $pathStaff->position?->name,
                     ];
                 })->toArray(),
                 'path_length' => $path->count() - 1, // Exclude self
@@ -182,7 +182,7 @@ class OrganizationalChart
                     return [
                         'id' => $manager->id,
                         'name' => $manager->full_name,
-                        'position' => $manager->position,
+                        'position' => $manager->position?->name,
                         'direct_reports' => $manager->getSpanOfControl(),
                     ];
                 })->toArray(),
@@ -200,7 +200,7 @@ class OrganizationalChart
                     return [
                         'id' => $staff->id,
                         'name' => $staff->full_name,
-                        'position' => $staff->position,
+                        'position' => $staff->position?->name,
                         'reporting_level' => $staff->getReportingLevel(),
                     ];
                 })->toArray(),
@@ -218,7 +218,7 @@ class OrganizationalChart
                     return [
                         'id' => $manager->id,
                         'name' => $manager->full_name,
-                        'position' => $manager->position,
+                        'position' => $manager->position?->name,
                         'direct_reports' => $manager->getSpanOfControl(),
                     ];
                 })->toArray(),
@@ -298,7 +298,7 @@ class OrganizationalChart
             $label = sprintf(
                 "%s\\n%s\\n%s",
                 $staff->full_name,
-                $staff->position ?? '',
+                $staff->position?->name ?? '',
                 $staff->employee_id
             );
             $dot .= sprintf("  \"%d\" [label=\"%s\"];\n", $staff->id, $label);

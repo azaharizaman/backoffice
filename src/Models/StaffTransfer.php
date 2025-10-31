@@ -41,8 +41,8 @@ use AzahariZaman\BackOffice\Exceptions\InvalidTransferException;
  * @property string|null $reason
  * @property string|null $notes
  * @property string|null $rejection_reason
- * @property string|null $from_position
- * @property string|null $to_position
+ * @property int|null $from_position_id
+ * @property int|null $to_position_id
  * @property bool $is_immediate
  * @property array|null $metadata
  * @property Carbon $created_at
@@ -53,6 +53,8 @@ use AzahariZaman\BackOffice\Exceptions\InvalidTransferException;
  * @property-read Office $toOffice
  * @property-read Department|null $fromDepartment
  * @property-read Department|null $toDepartment
+ * @property-read Position|null $fromPosition
+ * @property-read Position|null $toPosition
  * @property-read Staff|null $fromSupervisor
  * @property-read Staff|null $toSupervisor
  * @property-read Staff $requestedBy
@@ -98,8 +100,8 @@ class StaffTransfer extends Model
         'reason',
         'notes',
         'rejection_reason',
-        'from_position',
-        'to_position',
+        'from_position_id',
+        'to_position_id',
         'is_immediate',
         'metadata',
     ];
@@ -201,6 +203,22 @@ class StaffTransfer extends Model
     public function toSupervisor(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'to_supervisor_id');
+    }
+    
+    /**
+     * Current position
+     */
+    public function fromPosition(): BelongsTo
+    {
+        return $this->belongsTo(Position::class, 'from_position_id');
+    }
+    
+    /**
+     * New position
+     */
+    public function toPosition(): BelongsTo
+    {
+        return $this->belongsTo(Position::class, 'to_position_id');
     }
     
     /**

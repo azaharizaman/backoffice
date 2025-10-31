@@ -8,6 +8,7 @@ Welcome to the comprehensive documentation for the BackOffice Laravel package. T
 - [Configuration](configuration.md)
 - [Models & Relationships](models.md)
 - **[Model Factories](factories.md)** ⭐ _New!_
+- **[Position Management](positions.md)** ⭐ _New!_
 - [Organizational Chart & Reporting Lines](organizational-chart.md)
 - [Staff Resignation Management](resignation.md)
 - [Staff Transfer System](staff-transfers.md)
@@ -33,6 +34,12 @@ The BackOffice package is designed to handle complex organizational structures w
 - Staff can belong to offices and/or departments
 - Multiple unit assignments per staff member
 - Comprehensive staff information tracking
+- **Position Management**:
+  - Structured job positions with hierarchical types
+  - 10 position types from C-Level to Assistant
+  - Grade/salary band management
+  - Department precedence logic for position defaults
+  - Position-based filtering and reporting
 - **Organizational Chart & Reporting Lines**:
   - Hierarchical supervisor/subordinate relationships
   - Comprehensive organizational chart generation

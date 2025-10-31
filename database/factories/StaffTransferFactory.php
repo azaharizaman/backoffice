@@ -7,6 +7,7 @@ namespace AzahariZaman\BackOffice\Database\Factories;
 use AzahariZaman\BackOffice\Models\Staff;
 use AzahariZaman\BackOffice\Models\Office;
 use AzahariZaman\BackOffice\Models\Company;
+use AzahariZaman\BackOffice\Models\Position;
 use AzahariZaman\BackOffice\Models\Department;
 use AzahariZaman\BackOffice\Models\StaffTransfer;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -34,8 +35,8 @@ class StaffTransferFactory extends Factory
             'to_department_id' => null,
             'from_supervisor_id' => null,
             'to_supervisor_id' => null,
-            'from_position' => null,
-            'to_position' => null,
+            'from_position_id' => null,
+            'to_position_id' => null,
             'effective_date' => $this->faker->dateTimeBetween('now', '+1 month'),
             'reason' => $this->faker->sentence(),
             'status' => StaffTransferStatus::PENDING,
@@ -179,12 +180,17 @@ class StaffTransferFactory extends Factory
     /**
      * Configure the factory with position change.
      */
-    public function withPositionChange(): static
+    public function withPositionChange(?Position $fromPosition = null, ?Position $toPosition = null): static
     {
-        return $this->state(fn (array $attributes) => [
-            'from_position' => $this->faker->jobTitle(),
-            'to_position' => $this->faker->jobTitle(),
-        ]);
+        return $this->state(function (array $attributes) use ($fromPosition, $toPosition) {
+            $company = Company::find($attributes['staff_id'] ?? null)?->getCompany() 
+                ?? Company::factory()->create();
+                
+            return [
+                'from_position_id' => $fromPosition?->id ?? Position::factory()->for($company)->create()->id,
+                'to_position_id' => $toPosition?->id ?? Position::factory()->for($company)->create()->id,
+            ];
+        });
     }
 
     /**

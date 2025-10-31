@@ -6,6 +6,7 @@ namespace AzahariZaman\BackOffice\Database\Factories;
 
 use AzahariZaman\BackOffice\Models\Staff;
 use AzahariZaman\BackOffice\Models\Office;
+use AzahariZaman\BackOffice\Models\Position;
 use AzahariZaman\BackOffice\Enums\StaffStatus;
 use AzahariZaman\BackOffice\Models\Department;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,8 +28,8 @@ class StaffFactory extends Factory
             'phone' => $this->faker->phoneNumber(),
             'office_id' => Office::factory(),
             'department_id' => null,
+            'position_id' => null,
             'supervisor_id' => null,
-            'position' => $this->faker->jobTitle(),
             'hire_date' => $this->faker->dateTimeBetween('-5 years', '-1 month'),
             'resignation_date' => null,
             'resignation_reason' => null,
@@ -205,17 +206,21 @@ class StaffFactory extends Factory
     }
 
     /**
+     * Configure the factory for staff with a position.
+     */
+    public function withPosition(?Position $position = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'position_id' => $position?->id ?? Position::factory(),
+        ]);
+    }
+
+    /**
      * Configure the factory for CEO/President (top executive).
      */
     public function ceo(): static
     {
         return $this->state(fn (array $attributes) => [
-            'position' => $this->faker->randomElement([
-                'Chief Executive Officer',
-                'CEO',
-                'President',
-                'Managing Director',
-            ]),
             'supervisor_id' => null,
         ]);
     }

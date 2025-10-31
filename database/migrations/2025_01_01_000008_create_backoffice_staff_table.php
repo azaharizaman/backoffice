@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->unsignedBigInteger('office_id')->nullable();
             $table->unsignedBigInteger('department_id')->nullable();
-            $table->string('position')->nullable();
+            $table->unsignedBigInteger('position_id')->nullable();
             $table->date('hire_date')->nullable();
             $table->date('resignation_date')->nullable();
             $table->text('resignation_reason')->nullable();
@@ -40,6 +40,11 @@ return new class extends Migration
                   ->references('id')
                   ->on('backoffice_departments')
                   ->onDelete('set null');
+            
+            $table->foreign('position_id')
+                  ->references('id')
+                  ->on('backoffice_positions')
+                  ->onDelete('set null');
                   
             $table->foreign('supervisor_id')
                   ->references('id')
@@ -48,6 +53,7 @@ return new class extends Migration
             
             $table->index(['office_id']);
             $table->index(['department_id']);
+            $table->index(['position_id']);
             $table->index(['supervisor_id']);
             $table->index(['status']);
             $table->index(['resignation_date']);
