@@ -1,9 +1,9 @@
 # Backoffice Laravel Package
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/azaharizaman/backoffice.svg?style=flat-square)](https://packagist.org/packages/azaharizaman/backoffice)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/azaharizaman/backoffice/run-tests?label=tests)](https://github.com/azaharizaman/backoffice/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/azaharizaman/backoffice/Check%20&%20fix%20styling?label=code%20style)](https://github.com/azaharizaman/backoffice/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/azaharizaman/backoffice.svg?style=flat-square)](https://packagist.org/packages/azaharizaman/backoffice)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/azaharizaman/laravel-backoffice.svg?style=flat-square)](https://packagist.org/packages/azaharizaman/laravel-backoffice)
+[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/azaharizaman/laravel-backoffice/run-tests?label=tests)](https://github.com/azaharizaman/laravel-backoffice/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/azaharizaman/laravel-backoffice/Check%20&%20fix%20styling?label=code%20style)](https://github.com/azaharizaman/laravel-backoffice/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/azaharizaman/laravel-backoffice.svg?style=flat-square)](https://packagist.org/packages/azaharizaman/laravel-backoffice)
 
 A comprehensive Laravel package for managing hierarchical company structures, offices, departments, staff, and organizational units. This package provides a complete backend solution for complex organizational management without any UI components.
 
