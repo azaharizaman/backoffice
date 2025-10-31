@@ -192,11 +192,11 @@ class MyTest extends TestCase
 ### 2. Test Method Naming
 Use descriptive test method names:
 ```php
-/** @test */
+#[Test]
 public function it_can_create_company_hierarchy()
-/** @test */
+#[Test]
 public function it_prevents_circular_reference_when_updating()
-/** @test */
+#[Test]
 public function it_requires_name_and_company_fields()
 ```
 

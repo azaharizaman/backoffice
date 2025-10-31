@@ -2,18 +2,36 @@
 
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
-use AzahariZaman\BackOffice\Tests\TestCase;
-use AzahariZaman\BackOffice\Models\Company;
+use PHPUnit\Framework\Attributes\Test;
 use AzahariZaman\BackOffice\Models\Office;
+use AzahariZaman\BackOffice\Models\Company;
+use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\CoversClass;
 use AzahariZaman\BackOffice\Models\Department;
 use AzahariZaman\BackOffice\Models\OfficeType;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use AzahariZaman\BackOffice\Observers\OfficeObserver;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
+use AzahariZaman\BackOffice\Observers\DepartmentObserver;
 
+#[CoversClass(Department::class)]
+#[CoversClass(Company::class)]
+#[CoversClass(Office::class)]
+#[CoversClass(OfficeType::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(CompanyObserver::class)]
+#[CoversClass(DepartmentObserver::class)]
+#[CoversClass(OfficeObserver::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
+#[UsesClass(Department::class)]
 class DepartmentTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_department()
     {
         $company = Company::factory()->create([
@@ -53,7 +71,7 @@ class DepartmentTest extends TestCase
         $this->assertEquals($company->id, $department->company_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_company()
     {
         $company = Company::factory()->create([
@@ -71,7 +89,7 @@ class DepartmentTest extends TestCase
         $this->assertEquals('Test Company', $department->company->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_department_hierarchy()
     {
         $company = Company::factory()->create([
@@ -112,7 +130,7 @@ class DepartmentTest extends TestCase
         $this->assertEquals($parentDepartment->id, $childDepartment->parentDepartment->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_all_departments_in_hierarchy()
     {
         $company = Company::factory()->create([
@@ -168,7 +186,7 @@ class DepartmentTest extends TestCase
         $this->assertTrue($descendants->contains('id', $grandchild->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_by_company()
     {
         $company1 = Company::factory()->create([
@@ -200,7 +218,7 @@ class DepartmentTest extends TestCase
         $this->assertFalse($company1Departments->contains('id', $dept2->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_active_departments()
     {
         $company = Company::factory()->create([
@@ -240,7 +258,7 @@ class DepartmentTest extends TestCase
         $this->assertFalse($activeDepartments->contains('id', $inactiveDepartment->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_name_and_company()
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
@@ -253,7 +271,7 @@ class DepartmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_defaults_to_active()
     {
         $company = Company::factory()->create([

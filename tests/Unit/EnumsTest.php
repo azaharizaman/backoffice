@@ -2,13 +2,21 @@
 
 namespace AzahariZaman\BackOffice\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
 use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use AzahariZaman\BackOffice\Enums\StaffStatus;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
 use AzahariZaman\BackOffice\Enums\StaffTransferStatus;
 
+#[CoversClass(StaffTransferStatus::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(StaffStatus::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
 class EnumsTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function staff_status_enum_has_correct_values()
     {
         $this->assertEquals('active', StaffStatus::ACTIVE->value);
@@ -19,7 +27,7 @@ class EnumsTest extends TestCase
         $this->assertEquals('retired', StaffStatus::RETIRED->value);
     }
 
-    /** @test */
+    #[Test]
     public function staff_status_enum_has_correct_labels()
     {
         $this->assertEquals('Active', StaffStatus::ACTIVE->label());
@@ -30,7 +38,7 @@ class EnumsTest extends TestCase
         $this->assertEquals('Retired', StaffStatus::RETIRED->label());
     }
 
-    /** @test */
+    #[Test]
     public function staff_status_can_get_all_values()
     {
         $values = StaffStatus::values();
@@ -44,7 +52,7 @@ class EnumsTest extends TestCase
         $this->assertContains('retired', $values);
     }
 
-    /** @test */
+    #[Test]
     public function staff_transfer_status_enum_has_correct_values()
     {
         $this->assertEquals('pending', StaffTransferStatus::PENDING->value);
@@ -54,7 +62,7 @@ class EnumsTest extends TestCase
         $this->assertEquals('completed', StaffTransferStatus::COMPLETED->value);
     }
 
-    /** @test */
+    #[Test]
     public function staff_transfer_status_enum_has_correct_labels()
     {
         $this->assertEquals('Pending Approval', StaffTransferStatus::PENDING->label());
@@ -64,7 +72,7 @@ class EnumsTest extends TestCase
         $this->assertEquals('Completed', StaffTransferStatus::COMPLETED->label());
     }
 
-    /** @test */
+    #[Test]
     public function staff_transfer_status_can_check_if_can_be_modified()
     {
         $this->assertTrue(StaffTransferStatus::PENDING->canBeModified());

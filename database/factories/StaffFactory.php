@@ -153,12 +153,27 @@ class StaffFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'position' => $this->faker->randomElement([
                 'Manager',
-                'Senior Manager',
                 'Director',
-                'Senior Director',
                 'Vice President',
+            ]),
+        ]);
+    }
+
+    public function seniorManager(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'position' => $this->faker->randomElement([
+                'Senior Manager',
+                'Senior Director',
                 'Senior Vice President',
             ]),
+        ]);
+    }
+
+    public function hr(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'position' => 'HR Executive',
         ]);
     }
 

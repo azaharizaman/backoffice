@@ -4,13 +4,37 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
-use AzahariZaman\BackOffice\Enums\PositionType;
-use AzahariZaman\BackOffice\Models\Company;
-use AzahariZaman\BackOffice\Models\Department;
-use AzahariZaman\BackOffice\Models\Office;
-use AzahariZaman\BackOffice\Models\Position;
+use PHPUnit\Framework\Attributes\Test;
+use Illuminate\Database\QueryException;
 use AzahariZaman\BackOffice\Models\Staff;
+use AzahariZaman\BackOffice\Models\Office;
+use AzahariZaman\BackOffice\Models\Company;
 use AzahariZaman\BackOffice\Tests\TestCase;
+use AzahariZaman\BackOffice\Models\Position;
+use PHPUnit\Framework\Attributes\CoversClass;
+use AzahariZaman\BackOffice\Models\Department;
+use AzahariZaman\BackOffice\Enums\PositionType;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
+use AzahariZaman\BackOffice\Observers\StaffObserver;
+use AzahariZaman\BackOffice\Observers\OfficeObserver;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
+use AzahariZaman\BackOffice\Observers\DepartmentObserver;
+use AzahariZaman\BackOffice\Database\Factories\PositionFactory;
+
+#[CoversClass(Position::class)]
+#[CoversClass(PositionType::class)]
+#[CoversClass(Company::class)]
+#[CoversClass(Office::class)]
+#[CoversClass(Staff::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(CompanyObserver::class)]
+#[CoversClass(OfficeObserver::class)]
+#[CoversClass(DepartmentObserver::class)]
+#[CoversClass(StaffObserver::class)]
+#[CoversClass(Department::class)]
+#[CoversClass(PositionFactory::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
 
 class PositionTest extends TestCase
 {
@@ -27,7 +51,7 @@ class PositionTest extends TestCase
         $this->department = Department::factory()->for($this->company)->create();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_position(): void
     {
         $position = Position::factory()->for($this->company)->create([
@@ -48,7 +72,7 @@ class PositionTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_company(): void
     {
         $position = Position::factory()->for($this->company)->create();
@@ -57,7 +81,7 @@ class PositionTest extends TestCase
         $this->assertEquals($this->company->id, $position->company_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_have_default_department(): void
     {
         $position = Position::factory()
@@ -70,7 +94,7 @@ class PositionTest extends TestCase
         $this->assertTrue($position->hasDefaultDepartment());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_have_no_default_department(): void
     {
         $position = Position::factory()->for($this->company)->create([
@@ -81,7 +105,7 @@ class PositionTest extends TestCase
         $this->assertFalse($position->hasDefaultDepartment());
     }
 
-    /** @test */
+    #[Test]
     public function it_has_staff_relationship(): void
     {
         $position = Position::factory()->for($this->company)->create();
@@ -98,7 +122,7 @@ class PositionTest extends TestCase
         $this->assertTrue($position->staff->contains($staff2));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_active_staff_only(): void
     {
         $position = Position::factory()->for($this->company)->create();
@@ -115,7 +139,7 @@ class PositionTest extends TestCase
         $this->assertFalse($position->activeStaff->contains($inactiveStaff));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_active_positions(): void
     {
         Position::factory()->for($this->company)->active()->create();
@@ -128,7 +152,7 @@ class PositionTest extends TestCase
         $this->assertTrue($activePositions->every(fn ($p) => $p->is_active));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_by_company(): void
     {
         $company2 = Company::factory()->create();
@@ -142,7 +166,7 @@ class PositionTest extends TestCase
         $this->assertTrue($companyPositions->every(fn ($p) => $p->company_id === $this->company->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_by_department(): void
     {
         $department2 = Department::factory()->for($this->company)->create();
@@ -156,7 +180,7 @@ class PositionTest extends TestCase
         $this->assertTrue($deptPositions->every(fn ($p) => $p->department_id === $this->department->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_by_type(): void
     {
         Position::factory()->for($this->company)->management()->create();
@@ -169,7 +193,7 @@ class PositionTest extends TestCase
         $this->assertEquals(PositionType::MANAGEMENT, $managementPositions->first()->type);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_management_positions(): void
     {
         Position::factory()->for($this->company)->cLevel()->create();
@@ -183,7 +207,7 @@ class PositionTest extends TestCase
         $this->assertTrue($managementPositions->every(fn ($p) => $p->type->isManagement()));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_executive_positions(): void
     {
         Position::factory()->for($this->company)->seniorExecutive()->create();
@@ -197,7 +221,7 @@ class PositionTest extends TestCase
         $this->assertTrue($executivePositions->every(fn ($p) => $p->type->isExecutive()));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_if_management_level(): void
     {
         $cLevel = Position::factory()->for($this->company)->cLevel()->create();
@@ -208,7 +232,7 @@ class PositionTest extends TestCase
         $this->assertTrue($executive->isExecutive());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_hierarchical_level(): void
     {
         $cLevel = Position::factory()->for($this->company)->cLevel()->create();
@@ -220,7 +244,7 @@ class PositionTest extends TestCase
         $this->assertEquals(10, $assistant->getLevel());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_count_staff_in_position(): void
     {
         $position = Position::factory()->for($this->company)->create();
@@ -233,7 +257,7 @@ class PositionTest extends TestCase
         $this->assertEquals(3, $position->getActiveStaffCount());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_count_active_staff_separately(): void
     {
         $position = Position::factory()->for($this->company)->create();
@@ -249,7 +273,7 @@ class PositionTest extends TestCase
         $this->assertEquals(2, $position->getActiveStaffCount());
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_company_name_code_and_type(): void
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
@@ -259,7 +283,7 @@ class PositionTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_unique_code(): void
     {
         Position::factory()->for($this->company)->create([
@@ -273,7 +297,7 @@ class PositionTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_defaults_to_active(): void
     {
         $position = Position::factory()->for($this->company)->create();
@@ -281,7 +305,7 @@ class PositionTest extends TestCase
         $this->assertTrue($position->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function staff_inherits_position_department_when_no_department_set(): void
     {
         // Create position with default department
@@ -302,7 +326,7 @@ class PositionTest extends TestCase
         $this->assertEquals($this->department->id, $staff->getEffectiveDepartment()->id);
     }
 
-    /** @test */
+    #[Test]
     public function staff_department_takes_precedence_over_position_department(): void
     {
         $positionDept = Department::factory()->for($this->company)->create([
@@ -330,7 +354,7 @@ class PositionTest extends TestCase
         $this->assertEquals($staffDept->id, $staff->getEffectiveDepartment()->id);
     }
 
-    /** @test */
+    #[Test]
     public function staff_without_position_or_department_has_no_effective_department(): void
     {
         $staff = Staff::factory()->for($this->office)->create([
@@ -342,7 +366,7 @@ class PositionTest extends TestCase
         $this->assertNull($staff->getEffectiveDepartment());
     }
 
-    /** @test */
+    #[Test]
     public function staff_with_position_without_default_department_has_no_effective_department(): void
     {
         // Create position without default department

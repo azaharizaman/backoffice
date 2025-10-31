@@ -2,15 +2,36 @@
 
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
+use PHPUnit\Framework\Attributes\Test;
+use Illuminate\Database\QueryException;
 use AzahariZaman\BackOffice\Models\Staff;
 use AzahariZaman\BackOffice\Models\Office;
 use AzahariZaman\BackOffice\Models\Company;
 use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use AzahariZaman\BackOffice\Enums\StaffStatus;
 use AzahariZaman\BackOffice\Models\Department;
 use AzahariZaman\BackOffice\Models\OfficeType;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use AzahariZaman\BackOffice\Observers\StaffObserver;
+use AzahariZaman\BackOffice\Observers\OfficeObserver;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
+use AzahariZaman\BackOffice\Observers\DepartmentObserver;
 
+#[CoversClass(Staff::class)]
+#[CoversClass(Company::class)]
+#[CoversClass(Office::class)]
+#[CoversClass(Department::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(StaffStatus::class)]
+#[CoversClass(OfficeType::class)]
+#[CoversClass(CompanyObserver::class)]
+#[CoversClass(DepartmentObserver::class)]
+#[CoversClass(OfficeObserver::class)]
+#[CoversClass(StaffObserver::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
 class StaffTest extends TestCase
 {
     use RefreshDatabase;
@@ -47,7 +68,7 @@ class StaffTest extends TestCase
         return compact('company', 'office', 'department');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_staff()
     {
         $structure = $this->createTestStructure();
@@ -77,7 +98,7 @@ class StaffTest extends TestCase
         $this->assertEquals($structure['department']->id, $staff->department_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_department()
     {
         $structure = $this->createTestStructure();
@@ -95,7 +116,7 @@ class StaffTest extends TestCase
         $this->assertEquals('IT Department', $staff->department->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_office()
     {
         $structure = $this->createTestStructure();
@@ -115,7 +136,7 @@ class StaffTest extends TestCase
         $this->assertEquals('Headquarters', $staff->office->officeTypes->first()->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_have_supervisor_relationship()
     {
         $structure = $this->createTestStructure();
@@ -146,7 +167,7 @@ class StaffTest extends TestCase
         $this->assertTrue($supervisor->subordinates->contains($subordinate));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_by_status()
     {
         $structure = $this->createTestStructure();
@@ -178,7 +199,7 @@ class StaffTest extends TestCase
         $this->assertTrue($terminatedStaffList->contains('id', $terminatedStaff->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_by_department()
     {
         $structure = $this->createTestStructure();
@@ -216,7 +237,7 @@ class StaffTest extends TestCase
         $this->assertFalse($itDepartmentStaff->contains('id', $hrStaff->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_active_staff()
     {
         $structure = $this->createTestStructure();
@@ -246,7 +267,7 @@ class StaffTest extends TestCase
         $this->assertFalse($activeStaffList->contains('id', $inactiveStaff->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_staff_hierarchy()
     {
         $structure = $this->createTestStructure();
@@ -295,7 +316,7 @@ class StaffTest extends TestCase
         $this->assertCount(0, $developer->subordinates);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_unique_employee_id()
     {
         $structure = $this->createTestStructure();
@@ -321,7 +342,7 @@ class StaffTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_unique_email()
     {
         $structure = $this->createTestStructure();
@@ -347,7 +368,7 @@ class StaffTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_first_name_last_name_and_email()
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
@@ -361,7 +382,7 @@ class StaffTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_defaults_to_active_status()
     {
         $structure = $this->createTestStructure();

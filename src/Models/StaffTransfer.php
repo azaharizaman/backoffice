@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use AzahariZaman\BackOffice\Enums\StaffTransferStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use AzahariZaman\BackOffice\Exceptions\InvalidTransferException;
 
 /**
@@ -333,7 +333,7 @@ class StaffTransfer extends Model
     public function isDueForProcessing(): bool
     {
         return $this->status === StaffTransferStatus::APPROVED &&
-               $this->effective_date->isPast();
+               ($this->is_immediate || $this->effective_date->isPast());
     }
     
     /**
@@ -478,8 +478,12 @@ class StaffTransfer extends Model
         }
         
         // Validate effective date
-        if ($this->effective_date->isPast() && !$this->is_immediate) {
-            throw new InvalidTransferException('Effective date cannot be in the past for scheduled transfers');
+        if (!$this->is_immediate && $this->effective_date->isToday()) {
+            throw new InvalidTransferException('Effective date must be tomorrow or in the future for scheduled transfers');
+        }
+        
+        if ($this->effective_date->lt(Carbon::today())) {
+            throw new InvalidTransferException('Effective date cannot be today or in the past');
         }
         
         // Validate supervisor change doesn't create circular reference

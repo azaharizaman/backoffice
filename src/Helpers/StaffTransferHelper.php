@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Helpers;
 
-use AzahariZaman\BackOffice\Models\{Staff, Office, Department, StaffTransfer, Company};
-use AzahariZaman\BackOffice\Enums\StaffTransferStatus;
-use Illuminate\Database\Eloquent\Collection;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
+use AzahariZaman\BackOffice\Enums\StaffTransferStatus;
+use AzahariZaman\BackOffice\Models\{Staff, Office, Department, StaffTransfer, Company};
 
 /**
  * Staff Transfer Helper

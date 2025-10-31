@@ -2,17 +2,31 @@
 
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
+use PHPUnit\Framework\Attributes\Test;
+use Illuminate\Database\QueryException;
 use AzahariZaman\BackOffice\Models\Office;
 use AzahariZaman\BackOffice\Models\Company;
 use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use AzahariZaman\BackOffice\Models\OfficeType;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use AzahariZaman\BackOffice\Observers\OfficeObserver;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
 
+#[CoversClass(Office::class)]
+#[CoversClass(Company::class)]
+#[CoversClass(OfficeType::class)]
+#[CoversClass(OfficeObserver::class)]
+#[CoversClass(CompanyObserver::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
 class OfficeTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_can_create_an_office()
     {
         $company = Company::factory()->create([
@@ -52,7 +66,7 @@ class OfficeTest extends TestCase
         $this->assertTrue($office->officeTypes->contains($officeType));
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_company()
     {
         $company = Company::factory()->create([
@@ -78,7 +92,7 @@ class OfficeTest extends TestCase
         $this->assertEquals('Test Company', $office->company->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_office_type()
     {
         $company = Company::factory()->create([
@@ -107,7 +121,7 @@ class OfficeTest extends TestCase
         $this->assertEquals('Regional Office', $office->officeTypes->first()->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_office_hierarchy()
     {
         $company = Company::factory()->create([
@@ -144,7 +158,7 @@ class OfficeTest extends TestCase
         $this->assertEquals($parentOffice->id, $childOffice->parentOffice->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_root_office()
     {
         $company = Company::factory()->create([
@@ -190,7 +204,7 @@ class OfficeTest extends TestCase
         $this->assertTrue($rootOffice->isAncestorOf($level2Office));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_active_offices()
     {
         $company = Company::factory()->create([
@@ -228,7 +242,7 @@ class OfficeTest extends TestCase
         $this->assertFalse($activeOffices->contains('id', $inactiveOffice->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_by_company()
     {
         $company1 = Company::factory()->create([
@@ -270,7 +284,7 @@ class OfficeTest extends TestCase
         $this->assertFalse($company1Offices->contains('id', $office2->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_by_office_type()
     {
         $company = Company::factory()->create([
@@ -314,7 +328,7 @@ class OfficeTest extends TestCase
         $this->assertFalse($branchOffices->contains('id', $hqOffice->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_name_and_company()
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
@@ -327,7 +341,7 @@ class OfficeTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_have_nullable_code()
     {
         $company = Company::factory()->create([
@@ -353,7 +367,7 @@ class OfficeTest extends TestCase
         $this->assertNull($office->code);
     }
 
-    /** @test */
+    #[Test]
     public function it_defaults_to_active()
     {
         $company = Company::factory()->create([

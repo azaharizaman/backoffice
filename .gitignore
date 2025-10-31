@@ -192,3 +192,5 @@ tmp/
 # Local configuration
 .env.local
 local.php
+coverage-report
+coverage.xml

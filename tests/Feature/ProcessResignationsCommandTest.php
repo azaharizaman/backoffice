@@ -3,16 +3,36 @@
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
 use Carbon\Carbon;
+use PHPUnit\Framework\Attributes\Test;
 use AzahariZaman\BackOffice\Models\Staff;
 use AzahariZaman\BackOffice\Models\Office;
 use AzahariZaman\BackOffice\Models\Company;
 use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use AzahariZaman\BackOffice\Enums\StaffStatus;
 use AzahariZaman\BackOffice\Models\Department;
 use AzahariZaman\BackOffice\Models\OfficeType;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use AzahariZaman\BackOffice\Observers\StaffObserver;
+use AzahariZaman\BackOffice\Observers\OfficeObserver;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
+use AzahariZaman\BackOffice\Observers\DepartmentObserver;
 use AzahariZaman\BackOffice\Commands\ProcessResignationsCommand;
 
+#[CoversClass(ProcessResignationsCommand::class)]
+#[CoversClass(Staff::class)]
+#[CoversClass(Office::class)]
+#[CoversClass(Company::class)]
+#[CoversClass(Department::class)]
+#[CoversClass(OfficeType::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(CompanyObserver::class)]
+#[CoversClass(DepartmentObserver::class)]
+#[CoversClass(StaffObserver::class)]
+#[CoversClass(OfficeObserver::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
 class ProcessResignationsCommandTest extends TestCase
 {
     use RefreshDatabase;
@@ -49,7 +69,7 @@ class ProcessResignationsCommandTest extends TestCase
         return compact('company', 'office', 'department');
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_due_resignations()
     {
         $structure = $this->createTestStructure();
@@ -102,7 +122,7 @@ class ProcessResignationsCommandTest extends TestCase
         $this->assertTrue($futureStaff->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_no_resignations_to_process()
     {
         $structure = $this->createTestStructure();
@@ -122,7 +142,7 @@ class ProcessResignationsCommandTest extends TestCase
              ->assertExitCode(0);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_dry_run_mode()
     {
         $structure = $this->createTestStructure();
@@ -154,7 +174,7 @@ class ProcessResignationsCommandTest extends TestCase
         $this->assertTrue($dueStaff->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_displays_resignation_information_before_processing()
     {
         $structure = $this->createTestStructure();
@@ -187,7 +207,7 @@ class ProcessResignationsCommandTest extends TestCase
              ->assertExitCode(0);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_multiple_resignations()
     {
         $structure = $this->createTestStructure();
@@ -240,7 +260,7 @@ class ProcessResignationsCommandTest extends TestCase
         $this->assertNotNull($staff2->resigned_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_resignations_due_today()
     {
         $structure = $this->createTestStructure();

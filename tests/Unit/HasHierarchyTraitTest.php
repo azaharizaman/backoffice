@@ -2,15 +2,24 @@
 
 namespace AzahariZaman\BackOffice\Tests\Unit;
 
-use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use AzahariZaman\BackOffice\Models\Company;
+use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
 
+#[CoversClass(Company::class)]
+#[CoversClass(CompanyObserver::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
 class HasHierarchyTraitTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_can_identify_root_nodes()
     {
         $rootCompany = Company::factory()->create([
@@ -28,7 +37,7 @@ class HasHierarchyTraitTest extends TestCase
         $this->assertFalse($childCompany->isRoot());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_identify_leaf_nodes()
     {
         $parentCompany = Company::factory()->create([
@@ -46,7 +55,7 @@ class HasHierarchyTraitTest extends TestCase
         $this->assertTrue($childCompany->isLeaf());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_depth()
     {
         $rootCompany = Company::factory()->create([
@@ -71,7 +80,7 @@ class HasHierarchyTraitTest extends TestCase
         $this->assertEquals(2, $level2Company->getDepth());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_hierarchy_path()
     {
         $rootCompany = Company::factory()->create([
@@ -104,7 +113,7 @@ class HasHierarchyTraitTest extends TestCase
         $this->assertEquals('Level 2 Company', $path->last()->name, 'Level 2 should be last');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_ancestor_descendant_relationships()
     {
         $rootCompany = Company::factory()->create([
@@ -137,7 +146,7 @@ class HasHierarchyTraitTest extends TestCase
         $this->assertFalse($rootCompany->isDescendantOf($level1Company));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_all_descendants()
     {
         $rootCompany = Company::factory()->create([
@@ -171,7 +180,7 @@ class HasHierarchyTraitTest extends TestCase
         $this->assertTrue($descendants->contains('id', $grandchild->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_all_ancestors()
     {
         $rootCompany = Company::factory()->create([
@@ -198,7 +207,7 @@ class HasHierarchyTraitTest extends TestCase
         $this->assertTrue($ancestors->contains('id', $rootCompany->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_siblings()
     {
         $parentCompany = Company::factory()->create([
@@ -232,7 +241,7 @@ class HasHierarchyTraitTest extends TestCase
         $this->assertFalse($siblings->contains('id', $child1->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_root_node()
     {
         $rootCompany = Company::factory()->create([

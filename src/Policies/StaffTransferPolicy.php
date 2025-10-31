@@ -234,8 +234,8 @@ class StaffTransferPolicy
     {
         // Check if user is in HR department or has HR role
         return $user->department?->code === 'HR' ||
-               str_contains(strtolower($user->position ?? ''), 'hr') ||
-               str_contains(strtolower($user->position ?? ''), 'human resource');
+               str_contains(strtolower($user->position?->name ?? ''), 'hr') ||
+               str_contains(strtolower($user->position?->name ?? ''), 'human resource');
     }
 
     /**
@@ -244,10 +244,10 @@ class StaffTransferPolicy
     protected function isManager(Staff $user): bool
     {
         return $user->subordinates()->exists() ||
-               str_contains(strtolower($user->position ?? ''), 'manager') ||
-               str_contains(strtolower($user->position ?? ''), 'supervisor') ||
-               str_contains(strtolower($user->position ?? ''), 'director') ||
-               str_contains(strtolower($user->position ?? ''), 'head');
+               str_contains(strtolower($user->position?->name ?? ''), 'manager') ||
+               str_contains(strtolower($user->position?->name ?? ''), 'supervisor') ||
+               str_contains(strtolower($user->position?->name ?? ''), 'director') ||
+               str_contains(strtolower($user->position?->name ?? ''), 'head');
     }
 
     /**
@@ -255,12 +255,12 @@ class StaffTransferPolicy
      */
     protected function isSeniorManager(Staff $user): bool
     {
-        return str_contains(strtolower($user->position ?? ''), 'director') ||
-               str_contains(strtolower($user->position ?? ''), 'head') ||
-               str_contains(strtolower($user->position ?? ''), 'chief') ||
-               str_contains(strtolower($user->position ?? ''), 'vp') ||
-               str_contains(strtolower($user->position ?? ''), 'vice president') ||
-               $user->getReportingLevel() <= 1; // Very senior in hierarchy
+        return str_contains(strtolower($user->position?->name ?? ''), 'director') ||
+               str_contains(strtolower($user->position?->name ?? ''), 'head') ||
+               str_contains(strtolower($user->position?->name ?? ''), 'chief') ||
+               str_contains(strtolower($user->position?->name ?? ''), 'vp') ||
+               str_contains(strtolower($user->position?->name ?? ''), 'vice president') ||
+               $user->getReportingLevel() <= 0; // Top-level executives only
     }
 
     /**

@@ -4,20 +4,42 @@ declare(strict_types=1);
 
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
+use PHPUnit\Framework\Attributes\Test;
 use AzahariZaman\BackOffice\Models\Staff;
 use AzahariZaman\BackOffice\Models\Office;
 use AzahariZaman\BackOffice\Models\Company;
 use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use AzahariZaman\BackOffice\Enums\StaffStatus;
 use AzahariZaman\BackOffice\Models\Department;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
+use AzahariZaman\BackOffice\Observers\StaffObserver;
+use AzahariZaman\BackOffice\Observers\OfficeObserver;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
 use AzahariZaman\BackOffice\Helpers\OrganizationalChart;
+use AzahariZaman\BackOffice\Observers\DepartmentObserver;
 
 /**
  * Organizational Chart Feature Tests
  * 
  * Tests the organizational chart functionality including
  * hierarchical relationships, reporting lines, and chart exports.
+ * 
  */
+
+#[CoversClass(OrganizationalChart::class)]
+#[CoversClass(Company::class)]
+#[CoversClass(Office::class)]
+#[CoversClass(Department::class)]
+#[CoversClass(Staff::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(StaffStatus::class)]
+#[CoversClass(CompanyObserver::class)]
+#[CoversClass(DepartmentObserver::class)]
+#[CoversClass(OfficeObserver::class)]
+#[CoversClass(StaffObserver::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
 class OrganizationalChartTest extends TestCase
 {
     private Company $company;
@@ -50,7 +72,7 @@ class OrganizationalChartTest extends TestCase
         ]);
     }
     
-    /** @test */
+    #[Test]
     public function it_can_generate_organizational_chart_for_company()
     {
         // Create a simple organizational structure:
@@ -147,7 +169,7 @@ class OrganizationalChartTest extends TestCase
         $this->assertCount(2, $topLevel['subordinates']); // CTO and CFO
     }
     
-    /** @test */
+    #[Test]
     public function it_can_generate_flat_organizational_chart()
     {
         // Create simple structure
@@ -193,7 +215,7 @@ class OrganizationalChartTest extends TestCase
         $this->assertEquals(1, $managerData['reporting_level']);
     }
     
-    /** @test */
+    #[Test]
     public function it_can_generate_reporting_paths()
     {
         // Create 3-level hierarchy
@@ -244,7 +266,7 @@ class OrganizationalChartTest extends TestCase
         $this->assertEquals('John Smith', $path[2]['name']); // CEO
     }
     
-    /** @test */
+    #[Test]
     public function it_can_generate_organizational_statistics()
     {
         // Create structure for meaningful statistics
@@ -307,7 +329,7 @@ class OrganizationalChartTest extends TestCase
         $this->assertEquals(2, $stats['hierarchy_depth']['maximum_levels']); // Employee level is 2
     }
     
-    /** @test */
+    #[Test]
     public function it_can_export_to_csv_format()
     {
         // Create simple structure
@@ -342,7 +364,7 @@ class OrganizationalChartTest extends TestCase
         $this->assertStringContainsString('Jane Doe', $csv);
     }
     
-    /** @test */
+    #[Test]
     public function it_can_export_to_dot_format()
     {
         // Create simple structure
@@ -374,7 +396,7 @@ class OrganizationalChartTest extends TestCase
         $this->assertStringContainsString('->', $dot); // Should contain arrows for relationships
     }
     
-    /** @test */
+    #[Test]
     public function it_can_generate_chart_from_specific_staff()
     {
         // Create hierarchy
@@ -429,7 +451,7 @@ class OrganizationalChartTest extends TestCase
         $this->assertCount(1, $chart['chart']['subordinates']); // Bob Johnson
     }
     
-    /** @test */
+    #[Test]
     public function it_provides_reorganization_suggestions()
     {
         // Create a structure that should trigger suggestions

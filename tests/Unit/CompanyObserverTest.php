@@ -2,16 +2,26 @@
 
 namespace AzahariZaman\BackOffice\Tests\Unit;
 
-use AzahariZaman\BackOffice\Tests\TestCase;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
+use PHPUnit\Framework\Attributes\Test;
 use AzahariZaman\BackOffice\Models\Company;
-use AzahariZaman\BackOffice\Exceptions\CircularReferenceException;
+use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
+use AzahariZaman\BackOffice\Exceptions\CircularReferenceException;
 
+#[CoversClass(Company::class)]
+#[CoversClass(CircularReferenceException::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(CompanyObserver::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
 class CompanyObserverTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_prevents_circular_reference_when_creating()
     {
         $company = Company::factory()->create([
@@ -32,7 +42,7 @@ class CompanyObserverTest extends TestCase
         $company->update(['parent_company_id' => $company->id]);
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_circular_reference_when_updating()
     {
         $parentCompany = Company::factory()->create([
@@ -59,7 +69,7 @@ class CompanyObserverTest extends TestCase
         $parentCompany->update(['parent_company_id' => $grandChildCompany->id]);
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_valid_hierarchy_changes()
     {
         $company1 = Company::factory()->create([
@@ -84,7 +94,7 @@ class CompanyObserverTest extends TestCase
         $this->assertEquals($company2->id, $childCompany->fresh()->parent_company_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_removing_parent()
     {
         $parentCompany = Company::factory()->create([

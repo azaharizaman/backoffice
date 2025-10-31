@@ -346,7 +346,7 @@ class StaffTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_can_create_reporting_hierarchy()
     {
         // Arrange

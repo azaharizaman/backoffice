@@ -2,17 +2,38 @@
 
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
-use AzahariZaman\BackOffice\Tests\TestCase;
-use AzahariZaman\BackOffice\Models\Company;
-use AzahariZaman\BackOffice\Models\Office;
-use AzahariZaman\BackOffice\Models\Department;
-use AzahariZaman\BackOffice\Models\Staff;
-use AzahariZaman\BackOffice\Models\OfficeType;
-use AzahariZaman\BackOffice\Enums\StaffStatus;
-use AzahariZaman\BackOffice\Exceptions\InvalidResignationException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Carbon\Carbon;
+use PHPUnit\Framework\Attributes\Test;
+use AzahariZaman\BackOffice\Models\Staff;
+use AzahariZaman\BackOffice\Models\Office;
+use AzahariZaman\BackOffice\Models\Company;
+use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use AzahariZaman\BackOffice\Enums\StaffStatus;
+use AzahariZaman\BackOffice\Models\Department;
+use AzahariZaman\BackOffice\Models\OfficeType;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use AzahariZaman\BackOffice\Observers\StaffObserver;
+use AzahariZaman\BackOffice\Observers\OfficeObserver;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
+use AzahariZaman\BackOffice\Observers\DepartmentObserver;
+use AzahariZaman\BackOffice\Exceptions\InvalidResignationException;
 
+#[CoversClass(Company::class)]
+#[CoversClass(Office::class)]
+#[CoversClass(Department::class)]
+#[CoversClass(OfficeType::class)]
+#[CoversClass(Staff::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(StaffStatus::class)]
+#[CoversClass(CompanyObserver::class)]
+#[CoversClass(StaffObserver::class)]
+#[CoversClass(DepartmentObserver::class)]
+#[CoversClass(OfficeObserver::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
+#[CoversClass(InvalidResignationException::class)]
 class StaffResignationTest extends TestCase
 {
     use RefreshDatabase;
@@ -49,7 +70,7 @@ class StaffResignationTest extends TestCase
         return compact('company', 'office', 'department');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_schedule_staff_resignation()
     {
         $structure = $this->createTestStructure();
@@ -76,7 +97,7 @@ class StaffResignationTest extends TestCase
         $this->assertTrue($staff->hasPendingResignation());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_process_staff_resignation()
     {
         $structure = $this->createTestStructure();
@@ -108,7 +129,7 @@ class StaffResignationTest extends TestCase
         $this->assertTrue($freshStaff->isResigned());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cancel_scheduled_resignation()
     {
         $structure = $this->createTestStructure();
@@ -134,7 +155,7 @@ class StaffResignationTest extends TestCase
         $this->assertFalse($freshStaff->hasPendingResignation());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_if_resignation_is_due()
     {
         $structure = $this->createTestStructure();
@@ -171,7 +192,7 @@ class StaffResignationTest extends TestCase
         $this->assertFalse($staffFuture->isResignationDue());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_days_until_resignation()
     {
         $structure = $this->createTestStructure();
@@ -191,7 +212,7 @@ class StaffResignationTest extends TestCase
         $this->assertEquals(10, $daysUntil);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_staff_with_pending_resignations()
     {
         $structure = $this->createTestStructure();
@@ -241,7 +262,7 @@ class StaffResignationTest extends TestCase
         $this->assertFalse($pendingStaff->contains('id', $resignedStaff->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_resigned_staff()
     {
         $structure = $this->createTestStructure();
@@ -272,7 +293,7 @@ class StaffResignationTest extends TestCase
         $this->assertFalse($resigned->contains('id', $activeStaff->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_resignation_date_not_in_past_for_new_staff()
     {
         $structure = $this->createTestStructure();
@@ -291,7 +312,7 @@ class StaffResignationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_automatically_sets_resigned_at_when_status_changes_to_resigned()
     {
         $structure = $this->createTestStructure();
@@ -313,7 +334,7 @@ class StaffResignationTest extends TestCase
         $this->assertFalse($freshStaff->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_clears_resignation_data_when_reactivating_resigned_staff()
     {
         $structure = $this->createTestStructure();
@@ -360,7 +381,7 @@ class StaffResignationTest extends TestCase
         $this->assertTrue($freshStaff->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_staff_by_status()
     {
         $structure = $this->createTestStructure();

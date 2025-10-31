@@ -5,17 +5,41 @@ declare(strict_types=1);
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
 use Carbon\Carbon;
+use PHPUnit\Framework\Attributes\Test;
 use AzahariZaman\BackOffice\Models\Staff;
 use AzahariZaman\BackOffice\Models\Office;
 use AzahariZaman\BackOffice\Models\Company;
 use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use AzahariZaman\BackOffice\Enums\StaffStatus;
 use AzahariZaman\BackOffice\Models\Department;
 use AzahariZaman\BackOffice\Models\StaffTransfer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use AzahariZaman\BackOffice\Observers\StaffObserver;
+use AzahariZaman\BackOffice\Observers\OfficeObserver;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
 use AzahariZaman\BackOffice\Enums\StaffTransferStatus;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
+use AzahariZaman\BackOffice\Observers\DepartmentObserver;
+use AzahariZaman\BackOffice\Observers\StaffTransferObserver;
 use AzahariZaman\BackOffice\Exceptions\InvalidTransferException;
 
+#[CoversClass(Staff::class)]
+#[CoversClass(Office::class)]
+#[CoversClass(Company::class)]
+#[CoversClass(TestCase::class)]
+#[CoversClass(StaffStatus::class)]
+#[CoversClass(Department::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(RefreshDatabase::class)]
+#[CoversClass(StaffTransferStatus::class)]
+#[CoversClass(InvalidTransferException::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
+#[CoversClass(CompanyObserver::class)]
+#[CoversClass(DepartmentObserver::class)]
+#[CoversClass(OfficeObserver::class)]
+#[CoversClass(StaffObserver::class)]
+#[CoversClass(StaffTransferObserver::class)]
 class StaffTransferTest extends TestCase
 {
     use RefreshDatabase;
@@ -121,6 +145,7 @@ class StaffTransferTest extends TestCase
         ], $attributes));
     }
 
+    #[Test]
     public function test_it_can_create_immediate_transfer_request(): void
     {
         $transfer = StaffTransfer::create([
@@ -149,6 +174,7 @@ class StaffTransferTest extends TestCase
         $this->assertTrue($transfer->effective_date->isToday());
     }
 
+    #[Test]
     public function test_it_can_create_scheduled_transfer_request(): void
     {
         $futureDate = now()->addMonth();
@@ -167,7 +193,8 @@ class StaffTransferTest extends TestCase
         $this->assertEquals($futureDate->format('Y-m-d'), $transfer->effective_date->format('Y-m-d'));
         $this->assertFalse($transfer->isImmediate());
     }
-
+    
+    #[Test]
     public function test_it_can_approve_transfer_request(): void
     {
         $transfer = $this->createTransfer([
@@ -181,6 +208,7 @@ class StaffTransferTest extends TestCase
         $this->assertNotNull($transfer->fresh()->approved_at);
     }
 
+    #[Test]
     public function test_it_can_reject_transfer_request(): void
     {
         $transfer = $this->createTransfer([
@@ -194,6 +222,7 @@ class StaffTransferTest extends TestCase
         $this->assertNotNull($transfer->fresh()->rejected_at);
     }
 
+    #[Test]
     public function test_it_can_cancel_transfer_request(): void
     {
         $transfer = StaffTransfer::factory()->for($this->staff)->create([
@@ -209,6 +238,7 @@ class StaffTransferTest extends TestCase
         $this->assertStringContainsString('Employee request', $transfer->fresh()->notes ?? '');
     }
 
+    #[Test]
     public function test_it_processes_immediate_transfer_automatically_when_approved(): void
     {
         $transfer = StaffTransfer::factory()->for($this->staff)->create([
@@ -239,6 +269,7 @@ class StaffTransferTest extends TestCase
         $this->assertEquals($this->newSupervisor->id, $this->staff->supervisor_id);
     }
 
+    #[Test]
     public function test_it_does_not_process_scheduled_transfer_automatically(): void
     {
         $futureDate = now()->addMonth();
@@ -265,6 +296,7 @@ class StaffTransferTest extends TestCase
         $this->assertEquals($this->sourceOffice->id, $this->staff->office_id);
     }
 
+    #[Test]
     public function test_it_validates_against_same_office_transfer(): void
     {
         $this->expectException(InvalidTransferException::class);
@@ -283,6 +315,7 @@ class StaffTransferTest extends TestCase
         ]);
     }
 
+    #[Test]
     public function test_it_validates_against_pending_transfer_exists(): void
     {
         // Create first transfer
@@ -309,6 +342,7 @@ class StaffTransferTest extends TestCase
         ]);
     }
 
+    #[Test]
     public function test_it_validates_against_circular_supervisor_reference(): void
     {
         // Create a subordinate
@@ -334,6 +368,7 @@ class StaffTransferTest extends TestCase
         ]);
     }
 
+    #[Test]
     public function test_it_can_transfer_without_changing_supervisor(): void
     {
         $transfer = StaffTransfer::create([
@@ -359,6 +394,7 @@ class StaffTransferTest extends TestCase
         $this->assertEquals($this->supervisor->id, $this->staff->supervisor_id);
     }
 
+    #[Test]
     public function test_it_can_remove_supervisor_during_transfer(): void
     {
         $transfer = StaffTransfer::create([
@@ -384,6 +420,7 @@ class StaffTransferTest extends TestCase
         $this->assertNull($this->staff->supervisor_id);
     }
 
+    #[Test]
     public function test_it_can_only_transfer_office_without_department_change(): void
     {
         // Verify initial state
@@ -414,6 +451,7 @@ class StaffTransferTest extends TestCase
         $this->assertEquals($initialDepartmentId, $this->staff->department_id, 'Department should remain unchanged when not specified in transfer');
     }
 
+    #[Test]
     public function test_it_tracks_transfer_history_correctly(): void
     {
         // Ensure no transfers exist initially
@@ -461,6 +499,7 @@ class StaffTransferTest extends TestCase
         );
     }
 
+    #[Test]
     public function test_it_can_check_if_staff_has_active_transfer(): void
     {
         // No active transfer initially
@@ -490,6 +529,7 @@ class StaffTransferTest extends TestCase
         $this->assertFalse($this->staff->hasActiveTransfer());
     }
 
+    #[Test]
     public function test_it_can_check_if_staff_can_be_transferred(): void
     {
         // Active staff can be transferred
@@ -508,6 +548,7 @@ class StaffTransferTest extends TestCase
         $this->assertFalse($this->staff->canBeTransferred());
     }
 
+    #[Test]
     public function test_it_provides_transfer_scopes(): void
     {
         $staff1 = Staff::factory()->for($this->sourceOffice)->create();
@@ -568,6 +609,7 @@ class StaffTransferTest extends TestCase
         $this->assertCount(0, $dueTransfers);
     }
 
+    #[Test]
     public function test_it_handles_transfer_request_helper_method(): void
     {
         $requestedBy = Staff::factory()->for($this->sourceOffice)->create();
@@ -590,6 +632,7 @@ class StaffTransferTest extends TestCase
         $this->assertEquals(StaffTransferStatus::PENDING, $transferData->status);
     }
 
+    #[Test]
     public function test_it_validates_effective_date_not_in_past(): void
     {
         $this->expectException(InvalidTransferException::class);
@@ -606,6 +649,7 @@ class StaffTransferTest extends TestCase
         ]);
     }
 
+    #[Test]
     public function test_it_cannot_modify_final_status_transfers(): void
     {
         $transfer = StaffTransfer::factory()->for($this->staff)->create([

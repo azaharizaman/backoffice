@@ -2,15 +2,26 @@
 
 namespace AzahariZaman\BackOffice\Tests\Feature;
 
-use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use AzahariZaman\BackOffice\Models\Company;
+use AzahariZaman\BackOffice\Tests\TestCase;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\CoversClass;
+use AzahariZaman\BackOffice\Models\StaffTransfer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use AzahariZaman\BackOffice\BackOfficeServiceProvider;
+use AzahariZaman\BackOffice\Observers\CompanyObserver;
 
+#[CoversClass(Company::class)]
+#[CoversClass(BackOfficeServiceProvider::class)]
+#[CoversClass(StaffTransfer::class)]
+#[CoversClass(CompanyObserver::class)]
+#[UsesClass(Company::class)]
 class CompanyTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_company()
     {
         $company = Company::factory()->create([
@@ -32,7 +43,7 @@ class CompanyTest extends TestCase
         $this->assertTrue($company->isActive());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_company_hierarchy()
     {
         $parentCompany = Company::factory()->create([
@@ -50,7 +61,7 @@ class CompanyTest extends TestCase
         $this->assertEquals($parentCompany->id, $childCompany->parentCompany->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_root_company()
     {
         $rootCompany = Company::factory()->root()->create([
@@ -73,7 +84,7 @@ class CompanyTest extends TestCase
         $this->assertTrue($rootCompany->isAncestorOf($level2Company));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_all_descendants()
     {
         $parentCompany = Company::factory()->create([
@@ -104,7 +115,7 @@ class CompanyTest extends TestCase
         $this->assertTrue($descendants->contains('id', $grandchild->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_ancestors()
     {
         $rootCompany = Company::factory()->root()->create([
@@ -129,7 +140,7 @@ class CompanyTest extends TestCase
         $this->assertTrue($ancestors->contains('id', $rootCompany->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_if_company_is_root()
     {
         $rootCompany = Company::factory()->root()->create([
@@ -146,7 +157,7 @@ class CompanyTest extends TestCase
         $this->assertFalse($childCompany->isRoot());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_if_company_is_leaf()
     {
         $parentCompany = Company::factory()->create([
@@ -163,7 +174,7 @@ class CompanyTest extends TestCase
         $this->assertTrue($childCompany->isLeaf());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_hierarchy_depth()
     {
         $rootCompany = Company::factory()->root()->create([
@@ -186,7 +197,7 @@ class CompanyTest extends TestCase
         $this->assertEquals(2, $level2Company->getDepth());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_hierarchy_path()
     {
         $rootCompany = Company::factory()->create([
@@ -219,7 +230,7 @@ class CompanyTest extends TestCase
         $this->assertEquals('Level 2 Company', $path->last()->name, 'Level 2 company should be last in path');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_siblings()
     {
         $parentCompany = Company::factory()->create([
@@ -250,7 +261,7 @@ class CompanyTest extends TestCase
         $this->assertFalse($siblings->contains('id', $child1->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_root_companies()
     {
         $rootCompany1 = Company::factory()->root()->create([
@@ -276,7 +287,7 @@ class CompanyTest extends TestCase
         $this->assertFalse($rootCompanies->contains('id', $childCompany->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_active_companies()
     {
         $activeCompany = Company::factory()->active()->create([
@@ -296,7 +307,7 @@ class CompanyTest extends TestCase
         $this->assertFalse($activeCompanies->contains('id', $inactiveCompany->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_name()
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
@@ -308,7 +319,7 @@ class CompanyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_have_nullable_code()
     {
         $company = Company::factory()->create([
@@ -319,7 +330,7 @@ class CompanyTest extends TestCase
         $this->assertNull($company->code);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_have_nullable_description()
     {
         $company = Company::factory()->create([
@@ -331,7 +342,7 @@ class CompanyTest extends TestCase
         $this->assertNull($company->description);
     }
 
-    /** @test */
+    #[Test]
     public function it_defaults_to_active()
     {
         $company = Company::factory()->create([

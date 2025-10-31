@@ -37,7 +37,7 @@ class StaffTransferFactory extends Factory
             'to_supervisor_id' => null,
             'from_position_id' => null,
             'to_position_id' => null,
-            'effective_date' => $this->faker->dateTimeBetween('now', '+1 month'),
+            'effective_date' => $this->faker->dateTimeBetween('+1 day', '+1 month'),
             'reason' => $this->faker->sentence(),
             'status' => StaffTransferStatus::PENDING,
             'requested_by_id' => $staff->id,
